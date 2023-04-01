@@ -18,7 +18,7 @@ export default ({ store }, inject) => {
   if (!process.server) {
     // vuex缓存
     createPersistedState({
-      key: "vuex_Storage",
+      key: "__NUXT_ISSUE_BLOG_STORAGE",
       storage: window.sessionStorage,
     })(store);
   }

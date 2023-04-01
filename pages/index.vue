@@ -36,7 +36,7 @@ export default {
     if (!this.serverLoaded) {
       this.getIssueList(this.page);
     } else {
-      console.log("服务端加载好了");
+      console.log("首屏数据在服务端加载好了！");
     }
   },
   mounted() {

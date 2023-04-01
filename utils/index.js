@@ -6,3 +6,13 @@ export const isServer = () => process.server;
 export function isDev() {
   return process.env.NODE_ENV === "development";
 }
+
+export function delHtmlTag(str) {
+  return str.replace(/<[^>]+>/g, ""); //去掉所有的html标记
+}
+
+export function displayCodeText(str) {
+  return delHtmlTag(str)
+    .replace(/&quot;|&amp;|&#39;|&lt;|&gt;/g, "")
+    .replace(/\s{2,}|\n/g, " ");
+}

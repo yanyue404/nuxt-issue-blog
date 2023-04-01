@@ -1,6 +1,6 @@
 import blogConfig from "../blog.config";
 import http from "../plugins/http/http";
-import { isServer } from "@/utils";
+import { isServer, displayCodeText } from "@/utils";
 
 export const state = () => ({
   ...blogConfig,
@@ -22,7 +22,6 @@ export const mutations = {
     if (isServer()) {
       state.serverLoaded = true;
     }
-    console.log("data.total_count", data.total_count);
     state.page = data.page;
     state.pending = false;
     state.postList = [...state.postList, ...data.posts];
@@ -39,9 +38,25 @@ export const actions = {
     state.pending = true;
     await http.get(url).then((res) => {
       // 分页模式 拼接数据
+
+      const posts = (res.data.items || []).map((item) => {
+        return {
+          number: item.number,
+          title: item.title,
+          created_at: item.created_at,
+          body_html: displayCodeText(item.body_html).slice(0, 500),
+          labels: (item.labels || []).map(({ color, name, id }) => {
+            return {
+              color,
+              name,
+              id,
+            };
+          }),
+        };
+      });
       commit("updatePostList", {
         page,
-        posts: res.data.items,
+        posts,
         total_count: res.data.total_count,
       });
     });
