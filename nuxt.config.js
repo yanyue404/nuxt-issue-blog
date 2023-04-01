@@ -72,12 +72,19 @@ export default {
       // 为 客户端打包 进行扩展配置
       if (isClient) {
         config.externals = {};
-        // config.devtool = "eval-source-map"; //需要时才放开
         // 非开发环境移除runtime打包
         if (process.env.PATH_TYPE != "development") {
           config.externals["vue"] = "Vue";
           config.externals["vuex"] = "Vuex";
           config.externals["vue-router"] = "VueRouter";
+        }
+
+        // 非生产环境开启 source-map
+        if (process.env.PATH_TYPE !== "production") {
+          config.devtool = "eval-source-map";
+          Object.assign(config.output, {
+            devtoolModuleFilenameTemplate: "yanyue404://[resource-path]",
+          });
         }
 
         // 添加别名

@@ -3,7 +3,7 @@ import qs from "qs";
 
 global.Buffer = global.Buffer || require("buffer").Buffer;
 
-let baseURL = !process.server ? location.origin : "https://api.github.com";
+let baseURL = "https://api.github.com";
 
 const accessToken = `MWM2YmE5NmMwODJhODgyYzBiZmM2ZWExNGVhNzFhYjFkZTM4MzcwYw==`;
 
