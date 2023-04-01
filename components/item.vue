@@ -56,10 +56,10 @@ export default {
   },
   methods: {
     toPostDetail(id) {
-      this.$router.push(`/post?id=${id}`);
+      this.$router.push(`/posts/?id=${id}`);
     },
     chipClickHandler(labelName) {
-      this.$router.push(`/?label=${labelName}`);
+      this.$router.push(`/labels/?name=${labelName}`);
     },
   },
 };

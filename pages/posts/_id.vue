@@ -27,9 +27,9 @@
 </template>
 
 <script>
-import http from "../plugins/http/http";
+import http from "../../plugins/http/http";
 import { mapState, mapGetters } from "vuex";
-import Comment from "../components/comment";
+import Comment from "../../components/comment";
 import { formatPassTime } from "@/utils/date";
 
 export default {
@@ -48,8 +48,8 @@ export default {
     },
   },
   computed: {
-    ...mapGetters({
-      username: "blog/username",
+    ...mapState({
+      username: (state) => state.blog.username,
     }),
   },
   watch: {
@@ -83,7 +83,7 @@ export default {
         });
     },
     chipClickHandler(labelName) {
-      this.$router.push(`/?label=${labelName}`);
+      this.$router.push(`/labels/?label=${labelName}`);
     },
   },
   created() {

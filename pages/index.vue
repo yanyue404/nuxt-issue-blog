@@ -10,6 +10,7 @@
 <script>
 import { mapState, mapMutations, mapActions } from "vuex";
 import Item from "@/components/item.vue";
+import reachBottom from "@/mixins/reachBottom";
 export default {
   components: {
     Item,
@@ -32,6 +33,7 @@ export default {
       pending: (state) => state.blog.pending,
     }),
   },
+  mixins: [reachBottom],
   beforeMount() {
     if (!this.serverLoaded) {
       this.getIssueList(this.page);
@@ -39,28 +41,14 @@ export default {
       console.log("首屏数据在服务端加载好了！");
     }
   },
-  mounted() {
-    this.handleScroll();
-  },
   methods: {
     ...mapActions({
       getIssueList: "blog/getIssueList",
     }),
-    handleScroll() {
-      window.onscroll = () => {
-        // 滚动过可滚动的 2/3 加载下一页
-        const bottomOfWindow =
-          document.documentElement.scrollHeight -
-            document.documentElement.scrollTop <=
-          (document.documentElement.scrollHeight * 2) / 3;
-        if (
-          bottomOfWindow &&
-          !this.pending &&
-          this.total_count > this.postList.length
-        ) {
-          this.getIssueList({ page: this.page + 1 });
-        }
-      };
+    reachBottomFn() {
+      if (!this.pending && this.total_count > this.postList.length) {
+        this.getIssueList({ page: this.page + 1 });
+      }
     },
   },
 };

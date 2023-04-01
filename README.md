@@ -1,6 +1,10 @@
 # Nuxt Issue Blog
 
-基于 GitHub API 的博客工具，尽情享受 GitHub Issue 带来的便利吧。
+基于 [GitHub API](https://docs.github.com/en/rest/issues/issues) 的博客工具，尽情享受用 GitHub Issue 写博客带来的便利吧！
+
+## Demo
+
+https://yanyue404.github.io/blog
 
 ## Build Setup
 
