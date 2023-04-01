@@ -12,7 +12,8 @@
   "scripts": {
     "serve": "cross-env PATH_TYPE=development nuxt",
     "dev": "sh build.sh dev",
-    "generate": "sh build.sh generate"
+    "build": "sh build.sh generate",
+    "deploy": "sh build.sh deploy"
   },
   "dependencies": {
     "github-markdown-css": "^3.0.1",
