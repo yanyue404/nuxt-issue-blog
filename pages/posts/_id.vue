@@ -1,28 +1,41 @@
 <template>
-  <div v-show="post.id" padding>
-    <div class="q-mb-lg">
-      <h1 class="rainbow">{{ post.title }}</h1>
-      <code class="text-italic"
-        >Updated by {{ username }} {{ post.updated_at | timeAgo }}</code
-      >
+  <div>
+    <div v-show="!post.id">
+      <el-skeleton style="width: 100%" animated>
+        <template slot="template">
+          <div class="q-mb-lg">
+            <div><el-skeleton-item variant="h1" style="width: 50%" /></div>
+            <code class="text-italic">
+              <el-skeleton-item variant="text" style="width: 25%"
+            /></code>
+          </div>
+          <div v-for="item in [1, 2, 3, 4]" :key="item">
+            <el-skeleton-item variant="h2" style="width: 40%" />
+            <div style="padding: 14px">
+              <el-skeleton v-show="item % 2 === 1" :rows="10" animated />
+              <el-skeleton v-show="item % 2 === 0" :rows="4" animated />
+
+              <el-skeleton-item
+                v-show="item % 2 === 0"
+                variant="image"
+                style="width: 100%; height: 240px"
+              />
+              <el-skeleton v-show="item % 2 === 0" :rows="6" animated />
+            </div>
+          </div>
+        </template>
+      </el-skeleton>
     </div>
-    <div v-html="post.body_html" class="q-mt-lg" />
-    <!-- <div>
-      <div
-        v-for="label in post.labels"
-        outline
-        square
-        clickable
-        class="label"
-        :key="label.index"
-        :style="`border-color: 1px solid rgba(27,31,35,.2); color: #fff;background: #${label.color}`"
-        @click="chipClickHandler(label.name)"
-      >
-        {{ label.name }}
+    <div v-show="post.id" padding>
+      <div class="q-mb-lg">
+        <h1 class="rainbow">{{ post.title }}</h1>
+        <code class="text-italic"
+          >Updated by {{ username }} {{ post.updated_at | timeAgo }}</code
+        >
       </div>
-    </div> -->
-    <!-- <q-separator class="rainbow" style="height: 1px" /> -->
-    <Comment></Comment>
+      <div v-html="post.body_html" class="q-mt-lg" />
+      <Comment></Comment>
+    </div>
   </div>
 </template>
 
@@ -73,7 +86,7 @@ export default {
           `/repos/${this.$store.getters["blog/repository"]}/issues/${this.$route.query.id}`
         )
         .then((res) => {
-          this.$set(this, "post", res.data);
+          this.post = res.data;
           // this.$q.loading.hide();
         })
         .catch((err) => {
@@ -94,6 +107,18 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.q-mb-lg {
+::v-deep {
+  .el-skeleton__h1 {
+    height: 2.5em;
+    margin-bottom: 16px;
+    margin-top: 24px;
+    padding-bottom: 0.3em;
+  }
+  .el-skeleton__h2 {
+    height: 1.5em;
+    margin-bottom: 16px;
+    margin-top: 24px;
+    padding-bottom: 0.3em;
+  }
 }
 </style>

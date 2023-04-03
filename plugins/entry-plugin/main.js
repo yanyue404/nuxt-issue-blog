@@ -1,13 +1,28 @@
 import Vue from "vue";
 import createPersistedState from "vuex-persistedstate";
 import "github-markdown-css/github-markdown.css";
+import {
+  Button,
+  Skeleton,
+  SkeletonItem,
+  Backtop,
+  Message,
+  Notification,
+} from "element-ui";
 import $http from "@/plugins/http/http";
-import "@/styles/common.scss";
+import "element-ui/lib/theme-chalk/index.css";
 
 let main = {
   install(Vue) {
     // 变量的内容 后期可以在vue中 this->$api.xxx 使用
     Vue.prototype.$http = $http;
+    // element-ui
+    Vue.use(Button);
+    Vue.use(Skeleton);
+    Vue.use(SkeletonItem);
+    Vue.use(Backtop);
+    Vue.prototype.$message = Message;
+    Vue.prototype.$notify = Notification;
   },
 };
 Vue.use(main); // 这里不能丢

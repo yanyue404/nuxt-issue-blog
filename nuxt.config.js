@@ -45,7 +45,7 @@ export default {
   },
 
   // Global CSS: https://go.nuxtjs.dev/config-css
-  css: [],
+  css: ["~/styles/reset.css", "~/styles/global.scss"],
 
   // Plugins to run before rendering page: https://go.nuxtjs.dev/config-plugins
   plugins: [
@@ -64,6 +64,27 @@ export default {
   },
   // Build Configuration: https://go.nuxtjs.dev/config-build
   build: {
+    babel: {
+      babelrc: false,
+      plugins: [
+        [
+          "lodash",
+          {
+            libraryName: "lodash", // 配置lodash按需加载
+            libraryDirectory: "",
+            camel2DashComponentName: false,
+          },
+          "lodash",
+        ],
+        [
+          "component",
+          {
+            libraryName: "element-ui",
+            styleLibraryName: "theme-chalk",
+          },
+        ],
+      ],
+    },
     /*
      ** You can extend webpack config here
      */
@@ -115,4 +136,8 @@ export default {
     asyncScripts: true,
   },
   proxy: ["https://api.github.com/search", "https://api.github.com/repos"],
+  server: {
+    port: 7711,
+    host: "127.0.0.1",
+  },
 };
