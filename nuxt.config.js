@@ -1,5 +1,5 @@
 const path = require("path");
-import prdConfig from "./prd-config";
+import blogConfig from "./blog.config";
 
 //资源路径前缀，生产环境使用cdn域名
 let publicPath = process.env.PATH_TYPE !== "production" ? "/_nuxt/" : "/_nuxt/";
@@ -16,7 +16,7 @@ export default {
     },
   },
   router: {
-    base: prdConfig.baseUrl, //项目访问路径
+    base: blogConfig.baseUrl, //项目访问路径
     scrollBehavior(to, from, savedPosition) {
       if (savedPosition) {
         return savedPosition;
@@ -27,15 +27,15 @@ export default {
   },
   // Global page headers: https://go.nuxtjs.dev/config-head
   head: {
-    title: prdConfig.title,
+    title: blogConfig.seo.title,
     meta: [
       {
         name: "description",
-        content: prdConfig.description,
+        content: blogConfig.seo.description,
       },
       {
         name: "keywords",
-        content: prdConfig.keywords,
+        content: blogConfig.seo.keywords,
       },
     ],
   },

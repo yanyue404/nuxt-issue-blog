@@ -1,11 +1,10 @@
 import * as axios from "axios";
 import qs from "qs";
+import blogConf from "~/blog.config";
 
 global.Buffer = global.Buffer || require("buffer").Buffer;
 
 let baseURL = "https://api.github.com";
-
-const accessToken = `MWM2YmE5NmMwODJhODgyYzBiZmM2ZWExNGVhNzFhYjFkZTM4MzcwYw==`;
 
 // 1)实例化一个axios对象 http（根据当前环境配置baseURL）
 const http = axios.create({
@@ -13,7 +12,10 @@ const http = axios.create({
   timeout: 10000,
   headers: {
     Accept: "application/vnd.github.v3.html",
-    Authorization: `token ${Buffer.from(accessToken, "base64").toString()}`,
+    Authorization: `token ${Buffer.from(
+      blogConf.accessToken,
+      "base64"
+    ).toString()}`,
   },
 });
 

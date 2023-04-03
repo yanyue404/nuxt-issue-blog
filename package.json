@@ -6,7 +6,7 @@
     "serve": "cross-env PATH_TYPE=development nuxt",
     "dev": "sh build.sh dev",
     "build": "sh build.sh generate",
-    "deploy": "sh build.sh deploy"
+    "deploy": "node deploy.js"
   },
   "dependencies": {
     "element-ui": "^2.15.13",
@@ -28,6 +28,7 @@
     "less-loader": "^7.3.0",
     "postcss-pxtorem": "^5.1.1",
     "sass": "^1.32.5",
-    "sass-loader": "^10.1.1"
+    "sass-loader": "^10.1.1",
+    "shelljs": "^0.8.5"
   }
 }
