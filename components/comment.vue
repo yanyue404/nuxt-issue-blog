@@ -112,7 +112,7 @@ ul {
   }
 }
 button {
-  background: #fff;
+  background: var(--background-color);
   outline: 0;
   cursor: pointer;
   border-radius: 3px;

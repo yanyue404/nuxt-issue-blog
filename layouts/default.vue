@@ -1,19 +1,62 @@
 <template>
   <div class="markdown-body">
+    <header v-show="routeName === 'index'">
+      <h1 class="blog-title">{{ blogName }}</h1>
+      <el-switch class="dark-change" v-model="dark" active-color="#282c35">
+      </el-switch>
+    </header>
+
+    <button v-show="false" id="darkmode-button">Toggle dark mode</button>
     <Nuxt />
   </div>
 </template>
 
 <script>
+import darken from "darken";
+import { mapState } from "vuex";
 import { getUser } from "../plugins/http/api";
+
 export default {
   data() {
     return {
+      dark: false,
       user: {},
     };
   },
+  computed: {
+    routeName() {
+      return this.$route.name;
+    },
+    ...mapState({
+      blogName: (state) => state.blog.blogName,
+    }),
+  },
+  watch: {
+    dark: (newVal) => {
+      document.querySelector("#darkmode-button").click();
+    },
+  },
   created() {
     this.getUserInfo();
+  },
+  mounted() {
+    // https://github.com/ColinEspinas/darken
+    const darkmode = new darken({
+      class: "darkmode-active",
+      variables: {
+        "--markdown-body": ["#24292e", "#fff"],
+        "--theme-color": ["rgb(9, 105, 218)", "#ffa7c4"],
+        "--primary-color": ["#000000", "#fafafa"],
+        "--background-color": ["#fff", "#0d1117"],
+        "--textNormal": ["#353535", "hsla(0,0%,100%,0.88)"],
+      },
+      toggle: "#darkmode-button",
+      stylesheets: {
+        id: "darkmode-stylesheet",
+        dark: "./css/github-markdown-dark.css",
+        light: "./css/github-markdown-light.css",
+      },
+    });
   },
   methods: {
     getUserInfo() {
@@ -36,6 +79,17 @@ export default {
   min-width: 200px;
   max-width: 980px;
   margin: 0 auto;
+  // padding: 45px;
+  // color: var(--markdown-body);
+  background: var(--background-color);
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    color: var(--theme-color);
+  }
   img {
     border: 0.3em solid #e0dfcc;
     border-radius: 1em;
@@ -64,8 +118,23 @@ export default {
     padding: 15px;
   }
 }
-
-.rainbow {
-  color: rgb(9, 105, 218);
+header {
+  position: relative;
+}
+.blog-title {
+  font-size: 1.98818rem;
+  line-height: 2.625rem;
+  margin-bottom: 0px !important;
+  margin-top: 0px !important;
+  padding-top: 1.8rem;
+  padding-bottom: 1.8rem !important;
+  border-bottom: none !important;
+  font-family: Montserrat, sans-serif;
+}
+.dark-change {
+  position: absolute;
+  right: 30px;
+  top: 50%;
+  transform: translateY(-50%);
 }
 </style>

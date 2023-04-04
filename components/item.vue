@@ -7,13 +7,13 @@
           @click="toPostDetail(post.number)"
         >
           <div>
-            <div class="text-h6 rainbow">{{ post.title }}</div>
+            <h2 class="text-h6">{{ post.title }}</h2>
             <div class="text-desc text-weight-thin q-mt-sm q-mb-sm">
               {{ post.created_at | dateFormate }}
             </div>
           </div>
           <!-- 展示 4 行内容 -->
-          <div class="q-item__label text-body1 text-black text-justify">
+          <div class="q-item__label text-body1 text-intro text-justify">
             {{ post.body_html | htmlToText }}
           </div>
         </div>
@@ -79,10 +79,13 @@ export default {
   }
 }
 .text-h6 {
-  font-size: 1.25rem;
-  font-weight: 500;
+  // font-size: 1.25rem;
+  // font-weight: 500;
   line-height: 2rem;
+  margin: 0;
   letter-spacing: 0.0125em;
+  color: var(--theme-color);
+  border-bottom: none;
 }
 .text-body1 {
   font-size: 1rem;
@@ -93,8 +96,8 @@ export default {
 .text-desc {
   color: #86909c !important;
 }
-.text-black {
-color: #353535 !important;
+.text-intro {
+  color: var(--textNormal);
 }
 .text-justify {
   text-align: justify;
@@ -105,7 +108,7 @@ color: #353535 !important;
 
 .q-item {
   position: relative;
-  margin-top: 24px;
+  margin-top: 16px;
   outline: 0;
   text-decoration: none;
   display: flex;
@@ -138,7 +141,7 @@ color: #353535 !important;
   align-items: flex-end;
   flex-wrap: wrap;
   padding-right: 0;
-  padding-left: 16px;
+  // padding-left: 16px;
   width: auto;
   min-width: 0;
   max-width: 100%;

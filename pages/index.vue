@@ -1,8 +1,10 @@
 <template>
-  <div class="markdown-body">
-    <!-- 这里要展示博客列表 -->
-    <div v-show="postList.length !== 0" padding>
-      <Item :postList="postList" />
+  <div>
+    <div class="markdown-body">
+      <!-- 这里要展示博客列表 -->
+      <div v-show="postList.length !== 0" padding>
+        <Item :postList="postList" />
+      </div>
     </div>
   </div>
 </template>
@@ -11,6 +13,7 @@
 import { mapState, mapMutations, mapActions } from "vuex";
 import Item from "@/components/item.vue";
 import reachBottom from "@/mixins/reachBottom";
+
 export default {
   components: {
     Item,

@@ -19,7 +19,7 @@ body {
 }
 body,
 html {
-  background: #fff;
+  background: var(--background-color);
 }
 article,
 aside,
