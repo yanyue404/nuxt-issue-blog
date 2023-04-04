@@ -66,6 +66,6 @@ export default {
 }
 
 .rainbow {
-  color: #027be3;
+  color: rgb(9, 105, 218);
 }
 </style>

@@ -8,12 +8,12 @@
         >
           <div>
             <div class="text-h6 rainbow">{{ post.title }}</div>
-            <div class="text-gray-light text-weight-thin q-mt-sm q-mb-sm">
+            <div class="text-desc text-weight-thin q-mt-sm q-mb-sm">
               {{ post.created_at | dateFormate }}
             </div>
           </div>
           <!-- 展示 4 行内容 -->
-          <div class="q-item__label text-body1 text-gray-light text-justify">
+          <div class="q-item__label text-body1 text-black text-justify">
             {{ post.body_html | htmlToText }}
           </div>
         </div>
@@ -89,6 +89,12 @@ export default {
   font-weight: 400;
   line-height: 1.5rem;
   letter-spacing: 0.03125em;
+}
+.text-desc {
+  color: #86909c !important;
+}
+.text-black {
+color: #353535 !important;
 }
 .text-justify {
   text-align: justify;

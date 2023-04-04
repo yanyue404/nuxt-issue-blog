@@ -1,5 +1,26 @@
 <template>
   <div class="markdown-body">
+    <div v-show="labelList.length === 0">
+      <el-skeleton style="width: 100%; padding: 8px 16px 8px 32px" animated>
+        <template slot="template">
+          <div class="empty-block" v-for="item in emptyArr" :key="item">
+            <div class="flex-sb-c">
+              <el-skeleton-item variant="h6" style="width: 50%" />
+              <el-skeleton-item
+                variant="h2"
+                style="width: 85px; height: 35px"
+              />
+            </div>
+            <div>
+              <el-skeleton-item variant="text" style="width: 25%" />
+            </div>
+            <div style="padding: 4px">
+              <el-skeleton :rows="4" animated />
+            </div>
+          </div>
+        </template>
+      </el-skeleton>
+    </div>
     <!-- 这里要展示博客列表 -->
     <div v-show="labelList.length !== 0" padding>
       <Item :postList="labelList" />
@@ -16,7 +37,9 @@ export default {
     Item,
   },
   data() {
-    return {};
+    return {
+      emptyArr: Array.from({ length: 10 }, (_, i) => i),
+    };
   },
   computed: {
     label() {
@@ -58,3 +81,23 @@ export default {
   },
 };
 </script>
+
+<style lang="scss" scoped>
+.empty-block:first-child {
+  margin-top: 0;
+}
+.empty-block {
+  margin-top: 24px;
+}
+::v-deep {
+  .el-skeleton__h6 {
+    height: 2em;
+  }
+  .el-skeleton__text {
+    height: 1.5em;
+  }
+  .el-skeleton__p {
+    margin-top: 0.5em;
+  }
+}
+</style>
