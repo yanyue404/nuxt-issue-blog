@@ -4,8 +4,8 @@ const blogConfig = require("./blog.config");
  自动发布 blog 站点
 */
 
-// echo("# 开始生产环境编译 + 部署");
-// exec("npm run build");
+echo("# 开始生产环境编译 + 部署");
+exec("npm run build");
 
 echo("# 进入生成的文件夹");
 cd("dist");
