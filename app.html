@@ -15,8 +15,17 @@
     <meta name="x5-orientation" content="portrait" />
     <meta name="x5-fullscreen" content="true" />
     <link rel="icon" type="image/x-icon" href="favicon.ico" />
-    <style></style>
     {{HEAD}} {{ ENV.PATH_TYPE === "development" ? '' : `
+    <script>
+      // http://www.backalleycoder.com/2016/05/13/sghpa-the-single-page-app-hack-for-github-pages/
+      (function () {
+        var redirect = sessionStorage.redirect;
+        delete sessionStorage.redirect;
+        if (redirect && redirect != location.href) {
+          history.replaceState(null, null, redirect);
+        }
+      })();
+    </script>
     <script
       defer
       src="//mcdn.tk.cn/tk-online/assets/public-js/lib/vue.all.runtime.js"
