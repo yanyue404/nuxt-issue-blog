@@ -30,7 +30,7 @@
       <div class="q-mb-lg">
         <h1 class="rainbow">{{ post.title }}</h1>
         <code class="text-italic"
-          >Updated by {{ username }} {{ post.updated_at | timeAgo }}</code
+          >Updated by {{ userName }} {{ post.updated_at | timeAgo }}</code
         >
       </div>
       <div v-html="post.body_html" class="q-mt-lg" />
@@ -63,7 +63,7 @@ export default {
   },
   computed: {
     ...mapState({
-      username: (state) => state.blog.username,
+      userName: (state) => state.blog.userName,
     }),
   },
   watch: {

@@ -25,10 +25,10 @@ if [[ $1 == "deploy" ]]; then
     git add -A
     git commit -m 'deploy: autoDeploy by nuxt-issus-blog'
 
-    # 如果发布到 https://<USERNAME>.github.io
-    # git push -f git@github.com:<USERNAME>/<USERNAME>.github.io.git master
+    # 如果发布到 https://<userName>.github.io
+    # git push -f git@github.com:<userName>/<userName>.github.io.git master
 
-    # 如果发布到 https://<USERNAME>.github.io/<REPO>
+    # 如果发布到 https://<userName>.github.io/<REPO>
     git push -f https://github.com/yanyue404/blog.git master:gh-pages
 
     cd -

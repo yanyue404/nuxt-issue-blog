@@ -22,13 +22,13 @@ export default {
     return {};
   },
   async fetch({ app }) {
+    await app.store.dispatch("user/getUserInfo");
     return await app.store.dispatch("blog/getIssueList", {
       page: 1,
     });
   },
   computed: {
     ...mapState({
-      author: (state) => state.user.author,
       serverLoaded: (state) => state.blog.serverLoaded,
       postList: (state) => state.blog.postList,
       page: (state) => state.blog.page,

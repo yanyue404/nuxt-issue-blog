@@ -13,7 +13,7 @@ export const state = () => ({
 
 export const getters = {
   repository(s) {
-    return `${s.username}/${s.repository}`;
+    return `${s.userName}/${s.repository}`;
   },
 };
 

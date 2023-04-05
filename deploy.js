@@ -15,11 +15,11 @@ exec("git init");
 exec("git add -A");
 exec('git commit -m "deploy: autoDeploy by nuxt-issus-blog"');
 
-// # 如果发布到 https://<USERNAME>.github.io
-// # git push -f git@github.com:<USERNAME>/<USERNAME>.github.io.git master
+// # 如果发布到 https://<userName>.github.io
+// # git push -f git@github.com:<userName>/<userName>.github.io.git master
 
 exec(
-  `git push -f https://github.com/${blogConfig.username}/${blogConfig.repository}.git master:gh-pages`
+  `git push -f https://github.com/${blogConfig.userName}/${blogConfig.repository}.git master:gh-pages`
 );
 
 cd("-");

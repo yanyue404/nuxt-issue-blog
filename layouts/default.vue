@@ -2,28 +2,45 @@
   <div class="markdown-body">
     <header class="flex-sb-c" v-show="routeName === 'index'">
       <h1 class="blog-title">{{ blogName }}</h1>
-      <el-switch class="dark-change" v-model="dark" active-color="#282c35">
-      </el-switch>
+      <DarkMode v-model="dark"></DarkMode>
     </header>
-
     <button v-show="false" id="darkmode-button">Toggle dark mode</button>
+    <aside v-show="routeName === 'index'">
+      <div style="display: flex; margin-bottom: 1.5rem">
+        <img
+          class="avatar"
+          :src="user.avatar_url"
+          :alt="user.name"
+          style=""
+          title=""
+        />
+        <div style="max-width: 310px">
+          <p>
+            Personal blog by
+            <a :href="user.html_url">{{ user.name }}</a>
+          </p>
+          <p>{{ user.bio }}</p>
+        </div>
+      </div>
+    </aside>
     <Nuxt />
   </div>
 </template>
 
 <script>
-import darken from "darken";
 import { mapState } from "vuex";
-import { getUser } from "../plugins/http/api";
 import { isServer } from "@/utils";
+import DarkMode from "@/components/darkMode.vue";
 
 export default {
+  components: {
+    DarkMode,
+  },
   data() {
     return {
       dark: !isServer()
         ? localStorage.getItem("darken-mode") === "dark"
         : false,
-      user: {},
     };
   },
   computed: {
@@ -32,6 +49,8 @@ export default {
     },
     ...mapState({
       blogName: (state) => state.blog.blogName,
+      userName: (state) => state.blog.userName,
+      user: (state) => state.user,
     }),
   },
   watch: {
@@ -39,35 +58,9 @@ export default {
       document.querySelector("#darkmode-button").click();
     },
   },
-  created() {
-    this.getUserInfo();
-  },
-  mounted() {
-    // https://github.com/ColinEspinas/darken
-    const darkmode = new darken({
-      class: "darkmode-active",
-      variables: {
-        "--markdown-body": ["#24292e", "#fff"],
-        "--theme-color": ["rgb(9, 105, 218)", "#ffa7c4"],
-        "--primary-color": ["#000000", "#fafafa"],
-        "--background-color": ["#fff", "#0d1117"],
-        "--textNormal": ["#353535", "hsla(0,0%,100%,0.88)"],
-      },
-      toggle: "#darkmode-button",
-      stylesheets: {
-        id: "darkmode-stylesheet",
-        dark: "./css/github-markdown-dark.css",
-        light: "./css/github-markdown-light.css",
-      },
-    });
-  },
-  methods: {
-    getUserInfo() {
-      getUser({ userName: `yanyue404` }).then((res) => {
-        this.$set(this, "user", res.data);
-      });
-    },
-  },
+  created() {},
+
+  methods: {},
 };
 </script>
 <style lang="scss">
@@ -129,5 +122,18 @@ export default {
   font-family: Montserrat, sans-serif;
 }
 @media (max-width: 767px) {
+}
+aside {
+  .avatar {
+    margin-right: 0.875rem;
+    margin-bottom: 0px;
+    width: 3.5rem;
+    height: 3.5rem;
+    border-radius: 50%;
+    border: none !important;
+  }
+  p {
+    margin-bottom: 0 !important;
+  }
 }
 </style>
