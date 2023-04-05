@@ -1,6 +1,6 @@
 <template>
   <div class="markdown-body">
-    <header v-show="routeName === 'index'">
+    <header class="flex-sb-c" v-show="routeName === 'index'">
       <h1 class="blog-title">{{ blogName }}</h1>
       <el-switch class="dark-change" v-model="dark" active-color="#282c35">
       </el-switch>
@@ -15,11 +15,14 @@
 import darken from "darken";
 import { mapState } from "vuex";
 import { getUser } from "../plugins/http/api";
+import { isServer } from "@/utils";
 
 export default {
   data() {
     return {
-      dark: false,
+      dark: !isServer()
+        ? localStorage.getItem("darken-mode") === "dark"
+        : false,
       user: {},
     };
   },
@@ -79,6 +82,7 @@ export default {
   min-width: 200px;
   max-width: 980px;
   margin: 0 auto;
+  padding: 0 15px;
   // padding: 45px;
   // color: var(--markdown-body);
   background: var(--background-color);
@@ -91,7 +95,7 @@ export default {
     color: var(--theme-color);
   }
   img {
-    border: 0.3em solid #e0dfcc;
+    border: 0.3em solid #e0dfcc !important;
     border-radius: 1em;
     &[width="40%"] {
       width: 40%;
@@ -113,14 +117,7 @@ export default {
     }
   }
 }
-@media (max-width: 767px) {
-  .markdown-body {
-    padding: 15px;
-  }
-}
-header {
-  position: relative;
-}
+
 .blog-title {
   font-size: 1.98818rem;
   line-height: 2.625rem;
@@ -131,10 +128,6 @@ header {
   border-bottom: none !important;
   font-family: Montserrat, sans-serif;
 }
-.dark-change {
-  position: absolute;
-  right: 30px;
-  top: 50%;
-  transform: translateY(-50%);
+@media (max-width: 767px) {
 }
 </style>

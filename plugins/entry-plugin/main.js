@@ -9,6 +9,7 @@ import {
   Message,
   Notification,
   Switch,
+  Icon,
 } from "element-ui";
 import $http from "@/plugins/http/http";
 import "element-ui/lib/theme-chalk/index.css";
@@ -23,6 +24,7 @@ let main = {
     Vue.use(SkeletonItem);
     Vue.use(Backtop);
     Vue.use(Switch);
+    Vue.use(Icon);
     Vue.prototype.$message = Message;
     Vue.prototype.$notify = Notification;
   },

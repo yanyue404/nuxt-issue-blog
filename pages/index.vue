@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div class="markdown-body">
+    <div class="">
       <!-- 这里要展示博客列表 -->
       <div v-show="postList.length !== 0" padding>
         <Item :postList="postList" />
