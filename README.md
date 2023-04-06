@@ -2,9 +2,20 @@
 
 基于 [GitHub API](https://docs.github.com/en/rest/issues/issues) 的博客静态站点生成工具，尽情享受用 GitHub Issue 写博客带来的便利吧！
 
+## Features
+
+- 采用 ssg 静态站点，快速部署上线
+- 支持首屏服务端渲染
+- 支持 github 账号评论
+- 支持暗黑主题
+
 ## Demo
 
 https://yanyue404.github.io/blog
+
+![](./assets/light.jpg)
+
+![](./assets/dark.jpg)
 
 ## Usage
 
