@@ -32,3 +32,142 @@
   align-items: center;
   flex-direction: column;
 }
+/* -------------------------------------------------------------flex------------------------------------------------------- */
+
+.center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.hCenter {
+  display: flex;
+  align-items: center;
+}
+.wCenter {
+  display: flex;
+  justify-content: center;
+}
+
+/* 单行水平垂直 */
+
+.oneLineCenter {
+  display: flex;
+  display: -webkit-flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* 单行垂直居中，水平向左 */
+
+.oneLineStart {
+  display: flex;
+  display: -webkit-flex;
+  justify-content: flex-start;
+  align-items: center;
+}
+
+/* 单行垂直居中，水平向右 */
+
+.oneLineEnd {
+  display: flex;
+  display: -webkit-flex;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+/* 单行垂直居中，水平保持间距 */
+
+.oneLineAround {
+  display: flex;
+  display: -webkit-flex;
+  justify-content: space-around;
+  align-items: center;
+}
+
+/* 单行垂直居中，两端对齐 */
+
+.oneLineBetween {
+  display: flex;
+  display: -webkit-flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* 超过单行设置的最大宽度，允许换行显示 */
+
+.f-wrap {
+  flex-wrap: wrap;
+}
+
+/* 多轴线方向，一般配合  wrap 使用 控制*/
+
+/* 宽度不足换行后，垂直方向靠上排列 */
+
+.mulitLineStart {
+  display: flex;
+  display: -webkit-flex;
+  flex-wrap: wrap;
+  align-content: flex-start;
+}
+
+/* 纵轴变主轴，垂直靠上，水平居中 */
+
+.columnStart {
+  display: flex;
+  display: -webkit-flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+}
+
+/* 纵轴变主轴，垂直靠下，水平居中 */
+
+.columnEnd {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+/* 纵轴变主轴，垂直居中，水平居中 */
+
+.columnCenter {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+/* 纵轴变主轴，垂直间隔排列，水平居中 */
+
+.columnAround {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  align-items: center;
+}
+
+/* 纵轴变主轴，垂直上下两侧按间隔排列，水平居中 */
+
+.columnBetween {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+}
+/* 纵轴变主轴，垂直上下两侧按间隔排列，水平靠左 */
+
+.columnBetweenStart {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+/* 纵轴变主轴，垂直上下两侧按间隔排列，水平靠右 */
+
+.columnBetweenEnd {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: flex-end;
+}

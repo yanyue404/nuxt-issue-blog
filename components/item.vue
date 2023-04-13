@@ -1,34 +1,57 @@
 <template>
   <div class="card-list">
-    <div class="card" v-for="post in postList" :key="post.index">
-      <div class="q-item">
-        <div
-          class="q-item__section q-item__section--main"
-          @click="toPostDetail(post.number)"
-        >
-          <div>
-            <h2 class="text-h6">{{ post.title }}</h2>
-            <div class="text-desc text-weight-thin q-mt-sm q-mb-sm">
-              {{ post.created_at | dateFormate }}
+    <div class="card-container" v-show="pending">
+      <el-skeleton style="width: 100%; padding: 8px 16px 8px 32px" animated>
+        <template slot="template">
+          <div class="empty-block" v-for="item in emptyArr" :key="item">
+            <div class="flex-sb-c">
+              <el-skeleton-item variant="h6" style="width: 50%" />
+              <el-skeleton-item
+                variant="h2"
+                style="width: 85px; height: 35px"
+              />
+            </div>
+            <div>
+              <el-skeleton-item variant="text" style="width: 25%" />
+            </div>
+            <div style="padding: 4px">
+              <el-skeleton :rows="4" animated />
             </div>
           </div>
-          <!-- 展示 4 行内容 -->
-          <div class="q-item__label text-body1 text-intro text-justify">
-            {{ post.body_html | htmlToText }}
-          </div>
-        </div>
-        <div class="q-item__section column">
+        </template>
+      </el-skeleton>
+    </div>
+    <div class="card-container" v-show="!pending">
+      <div class="card" v-for="post in postList" :key="post.index">
+        <div class="q-item">
           <div
-            v-for="label in post.labels"
-            outline
-            square
-            clickable
-            class="q-chip label"
-            :key="label.index"
-            :style="`border-color: 1px solid rgba(27,31,35,.2); color: #fff;background: #${label.color}!important`"
-            @click="chipClickHandler(label.name)"
+            class="q-item__section q-item__section--main"
+            @click="toPostDetail(post.number)"
           >
-            {{ label.name }}
+            <div>
+              <h2 class="text-h6">{{ post.title }}</h2>
+              <div class="text-desc text-weight-thin q-mt-sm q-mb-sm">
+                {{ post.created_at | dateFormate }}
+              </div>
+            </div>
+            <!-- 展示 4 行内容 -->
+            <div class="q-item__label text-body1 text-intro text-justify">
+              {{ post.body_html | htmlToText }}
+            </div>
+          </div>
+          <div class="q-item__section column">
+            <div
+              v-for="label in post.labels"
+              outline
+              square
+              clickable
+              class="q-chip label"
+              :key="label.index"
+              :style="`border-color: 1px solid rgba(27,31,35,.2); color: #fff;background: #${label.color}!important`"
+              @click="chipClickHandler(label.name)"
+            >
+              {{ label.name }}
+            </div>
           </div>
         </div>
       </div>
@@ -41,6 +64,7 @@ import { dateFormat } from "@/utils/date";
 export default {
   name: "Item",
   props: {
+    pending: Boolean,
     postList: {
       type: Array,
       required: true,
@@ -53,6 +77,11 @@ export default {
     htmlToText(h) {
       return h.replace(/<\/?.+?>/g, "");
     },
+  },
+  data() {
+    return {
+      emptyArr: Array.from({ length: 10 }, (_, i) => i),
+    };
   },
   methods: {
     toPostDetail(id) {

@@ -3,7 +3,18 @@
     <div class="">
       <!-- 这里要展示博客列表 -->
       <div v-show="postList.length !== 0" padding>
-        <Item :postList="postList" />
+        <Item :pending="pending" :postList="postList" />
+        <div class="paginate-container" v-show="total_count > 25">
+          <el-pagination
+            background
+            layout="prev, pager, next"
+            :current-page.sync="pageNum"
+            :page-size="25"
+            :total="total_count"
+            @current-change="handleCurrentChange"
+          >
+          </el-pagination>
+        </div>
       </div>
     </div>
   </div>
@@ -12,7 +23,7 @@
 <script>
 import { mapState, mapMutations, mapActions } from "vuex";
 import Item from "@/components/item.vue";
-import reachBottom from "@/mixins/reachBottom";
+import { isServer, toNumber, getQueryString, debounce } from "@/utils";
 
 export default {
   components: {
@@ -34,12 +45,44 @@ export default {
       page: (state) => state.blog.page,
       total_count: (state) => state.blog.total_count,
       pending: (state) => state.blog.pending,
+      keyWorld: (state) => state.blog.keyWorld,
     }),
+    pageNum: {
+      get() {
+        return toNumber(this.page);
+      },
+      set(val) {
+        return toNumber(val);
+      },
+    },
   },
-  mixins: [reachBottom],
+  watch: {
+    $route() {
+      // 标签分类
+      if (this.$route.query.page) {
+        this.getIssueList({ page: toNumber(this.$route.query.page) });
+      }
+    },
+    keyWorld(newVal) {
+      this.debouncedCallback(newVal);
+    },
+  },
+  created() {
+    this.debouncedCallback = debounce((...args) => {
+      if (getQueryString("page")) {
+        this.updatePage(1);
+        this.$router.push(`/`);
+      }
+      this.getIssueList({ page: toNumber(this.page) });
+    }, 500);
+  },
   beforeMount() {
-    if (!this.serverLoaded) {
-      this.getIssueList(this.page);
+    let page = !isServer() ? getQueryString("page") : "";
+    if (page) {
+      this.updatePage(page);
+    }
+    if (!this.serverLoaded || page) {
+      this.getIssueList({ page: toNumber(this.page) });
     } else {
       console.log("首屏数据在服务端加载好了！");
     }
@@ -48,11 +91,26 @@ export default {
     ...mapActions({
       getIssueList: "blog/getIssueList",
     }),
-    reachBottomFn() {
-      if (!this.pending && this.total_count > this.postList.length) {
-        this.getIssueList({ page: this.page + 1 });
-      }
+    ...mapMutations({
+      updatePage: "blog/updatePage",
+    }),
+    handleCurrentChange(val) {
+      console.log(`当前页: ${val}`);
+      this.$router.push(`/?page=${val}`);
     },
   },
 };
 </script>
+<style lang="scss" scoped>
+.paginate-container {
+  display: flex;
+  justify-content: center;
+  margin-top: 16px;
+  margin-bottom: 16px;
+  text-align: center;
+
+  ::v-deep .el-pagination.is-background .el-pager li:not(.disabled).active {
+    background-color: var(--theme-color) !important;
+  }
+}
+</style>

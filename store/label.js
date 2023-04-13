@@ -27,7 +27,7 @@ export const mutations = {
 export const actions = {
   async getIssueListByLabel(
     { commit, state, rootState, rootGetters, getters },
-    { page = 1, label = "", number = 30 }
+    { page = 1, label = "", number = 25 }
   ) {
     let url = `/search/issues?q=+repo:${rootGetters["blog/repository"]}+label:${label}+state:open&page=${page}&per_page=${number}`;
     state.pending = true;

@@ -5,7 +5,7 @@
       <DarkMode v-model="dark"></DarkMode>
     </header>
     <button v-show="false" id="darkmode-button">Toggle dark mode</button>
-    <aside v-show="routeName === 'index'">
+    <aside class="flex-sb-c" v-show="routeName === 'index'">
       <div style="display: flex; margin-bottom: 1.5rem">
         <img
           class="avatar"
@@ -14,7 +14,7 @@
           style=""
           title=""
         />
-        <div style="max-width: 310px">
+        <div class="columnBetweenStart" style="max-width: 310px">
           <p>
             Personal blog by
             <a :href="user.html_url">{{ user.name }}</a>
@@ -22,13 +22,25 @@
           <p>{{ user.bio }}</p>
         </div>
       </div>
+      <div style="margin-bottom: 1.5rem; flex: 0.9">
+        <el-input
+          v-model="keyWorldVal"
+          placeholder="搜索文章标题/关键字"
+          :clearable="true"
+        ></el-input>
+      </div>
+      <!-- <el-input
+        v-model="keyWorldVal"
+        placeholder="搜索博客文章"
+        :clearable="true"
+      ></el-input> -->
     </aside>
     <Nuxt />
   </div>
 </template>
 
 <script>
-import { mapState } from "vuex";
+import { mapState, mapMutations } from "vuex";
 import { isServer } from "@/utils";
 import DarkMode from "@/components/darkMode.vue";
 
@@ -50,17 +62,28 @@ export default {
     ...mapState({
       blogName: (state) => state.blog.blogName,
       userName: (state) => state.blog.userName,
+      keyWorld: (state) => state.blog.keyWorld,
       user: (state) => state.user,
     }),
+    keyWorldVal: {
+      get() {
+        return this.keyWorld || "";
+      },
+      set(val) {
+        this.updateKeyWorld(val);
+      },
+    },
   },
   watch: {
     dark: (newVal) => {
       document.querySelector("#darkmode-button").click();
     },
   },
-  created() {},
-
-  methods: {},
+  methods: {
+    ...mapMutations({
+      updateKeyWorld: "blog/updateKeyWorld",
+    }),
+  },
 };
 </script>
 <style lang="scss">
