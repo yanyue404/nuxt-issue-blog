@@ -1,0 +1,41 @@
+name: Build and Deploy
+on:
+  push:
+    branches:
+     - main
+jobs:
+   build-and-deploy:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node: ['lts/fermium']
+    steps:
+      - name: Checkout
+        uses: actions/checkout@main
+        with:
+          ref: 'master'
+          persist-credentials: false
+          fetch-depth: 0
+        env:
+          TZ: Asia/Shanghai
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@main
+        with:
+          node-version:  ${{ matrix.node }}
+      - name: npm Install
+        run: npm install
+      - name: Build Nuxt Pages
+        run: npm run build
+      - name: Deploy to Pages
+        env:
+         TZ: Asia/Shanghai
+        run: |
+          cd dist
+          git init
+          git config user.name "yanyue404"
+          git config user.email "1656800216@qq.com"
+          git add .
+          git commit -m 'Deploying to gh-pages from Github actions'
+
+          git push -f https://ACCESS_TOKEN:${{secrets.ACCESS_TOKEN }}@github.com/yanyue404/nuxt-issue-blog.git master:gh-pages
+          cd -
