@@ -6,6 +6,7 @@
     "serve": "cross-env PATH_TYPE=development nuxt",
     "dev": "sh build.sh dev",
     "build": "sh build.sh generate",
+    "generate": "nuxt generate",
     "deploy": "node deploy.js"
   },
   "dependencies": {

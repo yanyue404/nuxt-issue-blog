@@ -25,7 +25,7 @@ jobs:
       - name: npm Install
         run: npm install
       - name: Build Nuxt Pages
-        run: npm run build
+        run: npm run generate
       - name: Deploy to Pages
         env:
          TZ: Asia/Shanghai
