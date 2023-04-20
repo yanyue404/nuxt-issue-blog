@@ -9,6 +9,12 @@
 - 支持 github 账号评论
 - 支持暗黑主题
 
+## TODO
+
+- github action 自动部署
+- markdown 博客文章标题导航栏
+- markdown 博客文章在线编辑功能
+
 ## Demo
 
 https://yanyue404.github.io/blog
