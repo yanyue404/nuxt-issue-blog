@@ -129,10 +129,10 @@ export default {
   color: var(--textNormal);
 }
 .text-justify {
-  text-align: justify;
-  -webkit-hyphens: auto;
-  -ms-hyphens: auto;
-  hyphens: auto;
+  // text-align: justify;
+  // -webkit-hyphens: auto;
+  // -ms-hyphens: auto;
+  // hyphens: auto;
 }
 
 .q-item {
@@ -155,8 +155,10 @@ export default {
 }
 
 .q-item__label {
-  overflow: hidden;
   display: -webkit-box;
+  word-break: break-all;
+  text-overflow: ellipsis;
+  overflow: hidden;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 4;
 }
