@@ -1,19 +1,23 @@
+# https://www.ruanyifeng.com/blog/2016/07/yaml.html
 name: Build and Deploy
 on:
   push:
     branches:
-     - master
+      - master
+  # 定时任务在utc的9点执行，换算北京时间需要 + 8也就是凌晨五点
+  schedule:
+    - cron: "0 21 * * *"
 jobs:
-   build-and-deploy:
+  build-and-deploy:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node: ['lts/fermium']
+        node: ["lts/fermium"]
     steps:
       - name: Checkout
         uses: actions/checkout@main
         with:
-          ref: 'master'
+          ref: "master"
           persist-credentials: false
           fetch-depth: 0
         env:
@@ -21,14 +25,14 @@ jobs:
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@main
         with:
-          node-version:  ${{ matrix.node }}
+          node-version: ${{ matrix.node }}
       - name: npm Install
         run: npm install
       - name: Build Nuxt Pages
         run: npm run generate
       - name: Deploy to Pages
         env:
-         TZ: Asia/Shanghai
+          TZ: Asia/Shanghai
         run: |
           cd dist
           git init
@@ -37,5 +41,5 @@ jobs:
           git add .
           git commit -m 'Deploying to gh-pages from Github actions'
 
-          git push -f https://ACCESS_TOKEN:${{secrets.ACCESS_TOKEN }}@github.com/yanyue404/nuxt-issue-blog.git master:gh-pages
+          git push -f https://ACCESS_TOKEN:${{secrets.ACCESS_TOKEN }}@github.com/yanyue404/blog.git master:gh-pages
           cd -
