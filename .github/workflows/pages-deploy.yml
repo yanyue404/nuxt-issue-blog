@@ -1,4 +1,5 @@
 # https://www.ruanyifeng.com/blog/2016/07/yaml.html
+# 手动触发
 name: Build and Deploy
 on:
   push:
