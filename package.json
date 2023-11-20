@@ -1,6 +1,6 @@
 {
   "name": "nuxt-boilerplate",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "author": "yanyue404",
   "scripts": {
     "serve": "cross-env PATH_TYPE=development nuxt",
