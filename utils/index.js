@@ -12,7 +12,7 @@ export function delHtmlTag(str) {
 }
 
 export function displayCodeText(str) {
-  return delHtmlTag(str)
+  return delHtmlTag(str || '')
     .replace(/&quot;|&amp;|&#39;|&lt;|&gt;/g, "")
     .replace(/\s{2,}|\n/g, " ");
 }
