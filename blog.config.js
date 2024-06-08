@@ -7,6 +7,6 @@ module.exports = {
   seo: {
     title: "闫越的网络日志",
     description: "Just blog and unjust blog",
-    keywords: "基督徒 | 歌者 | F2E",
+    keywords: "基督徒 | F2E",
   },
 };

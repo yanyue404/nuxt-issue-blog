@@ -93,10 +93,20 @@ export default {
   box-sizing: border-box;
   margin: 0;
 }
+body {
+  background-color: #f2f3f5;
+}
+.blog-wrap {
+  h2 {
+    font-weight: 600;
+    padding-bottom: .3em;
+    font-size: 1.5em;
+  }
+}
 .markdown-body {
   box-sizing: border-box;
   min-width: 200px;
-  max-width: 980px;
+  max-width: 1146px;
   margin: 0 auto;
   padding: 0 15px;
   // padding: 45px;
@@ -111,6 +121,7 @@ export default {
     color: var(--theme-color);
   }
   img {
+    box-sizing: border-box !important;
     border: 0.3em solid #e0dfcc !important;
     border-radius: 1em;
     &[width="40%"] {

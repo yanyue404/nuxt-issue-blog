@@ -9,10 +9,10 @@
 - 支持 github 账号评论
 - 支持暗黑主题
 - github action 自动部署
+- markdown 博客文章标题导航栏
 
 ## TODO
 
-- markdown 博客文章标题导航栏
 - markdown 博客文章在线编辑功能
 
 ## Demo

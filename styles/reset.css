@@ -152,6 +152,8 @@ img {
 }
 a {
   text-decoration: none;
+  cursor: pointer;
+  background-color: transparent;
 }
 b,
 em,
