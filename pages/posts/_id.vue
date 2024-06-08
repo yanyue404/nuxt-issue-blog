@@ -241,7 +241,7 @@ export default {
   top: 0px;
   width: 300px;
   margin-right: -15px;
-  background-color: #fff;
+  background: var(--background-color);
   border-radius: 6px;
   padding: 0;
   display: flex;
@@ -251,7 +251,7 @@ export default {
     margin: 0 1.667rem;
     font-size: 16px;
     line-height: 2rem;
-    color: #252933;
+    color: var(--theme-color);
     border-bottom: 1px solid #e4e6eb;
     display: flex;
     justify-content: space-between;
