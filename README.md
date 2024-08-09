@@ -68,7 +68,8 @@ window.btoa('{你的 GitHub Token}')
 2. 将代码克隆到本地；
 3. 编辑 `blog.config.js` 文件；
 4. 安装依赖：`yarn install`；
-5. 查看效果： `yarn serve`， 本地预览 `localhost:7711`;
-6. 打包：`yarn dev|build`；
-7. 部署：`yarn deploy`；
-8. 浏览器地址栏输入：`{你的用户名}.github.io/blog` 查看。
+5. 访问 Github 接口你可能需要能访问外网的终端代理：`export https_proxy=http://127.0.0.1:8899 http_proxy=http://127.0.0.1:8899`
+6. 查看效果： `yarn serve`， 本地预览 `localhost:9527`;
+7. 打包：`yarn dev|build`；
+8. 部署：`yarn deploy`；
+9. 浏览器地址栏输入：`{你的用户名}.github.io/blog` 查看。

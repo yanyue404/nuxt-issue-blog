@@ -1,7 +1,7 @@
 <template>
   <div class="article-block">
     <!-- 加载中，文章骨架屏 -->
-    <div class="main-area article-area" v-show="!post.id">
+    <div v-show="!post.id" class="main-area article-area">
       <el-skeleton style="width: 100%" animated>
         <template slot="template">
           <div class="article-header">
@@ -28,27 +28,30 @@
       </el-skeleton>
     </div>
     <!-- 加载完毕 -->
-    <div class="main-area article-area" v-show="post.id" padding>
+    <div v-show="post.id" class="main-area article-area" padding>
       <div class="article-header">
         <h1 class="rainbow">{{ post.title }}</h1>
         <code class="text-italic"
           >Updated by {{ userName }} {{ post.updated_at | timeAgo }}</code
         >
       </div>
-      <div v-html="post.body_html" class="q-mt-lg" />
+      <div class="q-mt-lg" v-html="post.body_html" />
       <el-backtop />
       <Comment></Comment>
     </div>
     <div class="article-gap"></div>
     <!-- 目录的骨架屏 -->
-    <div class="article-sideBar" v-show="!post.id">
+    <div v-show="!post.id" class="article-sideBar">
       <nav class="article-catalog catalog-block">
         <el-skeleton style="width: 100%" animated>
           <template slot="template">
             <div v-for="item in [1]" :key="item">
-              <el-skeleton-item variant="h2" style="width: 40%; margin-left: 18px;" />
+              <el-skeleton-item
+                variant="h2"
+                style="width: 40%; margin-left: 18px"
+              />
               <div style="padding: 14px">
-                <el-skeleton  :rows="7" style="margin-left: 5px;" animated />
+                <el-skeleton :rows="7" style="margin-left: 5px" animated />
               </div>
             </div>
           </template>
@@ -56,7 +59,7 @@
       </nav>
     </div>
     <!-- 侧边栏 -->
-    <div class="article-sideBar" v-show="post.id">
+    <div v-show="post.id" class="article-sideBar">
       <!-- 导航目录 -->
       <nav class="article-catalog catalog-block">
         <div class="catalog-title">
@@ -66,32 +69,32 @@
           <ul class="catalog-list" style="margin-top: 0px">
             <!-- active 给 li 是选中 -->
             <li
-              class="item d1"
               v-for="(item, index) in navList"
               :key="`${item.type}-${index}`"
+              class="item d1"
             >
               <div class="a-container">
                 <a
                   :href="`#${item.id}`"
                   :title="item.text"
-                  @click.stop.self="toH1"
                   class="catalog-aTag d1-aTag-title"
+                  @click.stop.self="toH1"
                 >
                   {{ item.text }}
                 </a>
               </div>
               <ul v-show="item.children.length > 0" class="sub-list">
                 <li
-                  class="item d3"
                   v-for="(o, oIndex) in item.children"
                   :key="`${o.type}-${oIndex}`"
+                  class="item d3"
                 >
                   <div class="a-container">
                     <a
                       :href="`#${o.id}`"
                       :title="o.text"
-                      @click.stop.self="toH1"
                       class="catalog-aTag d1-aTag-title"
+                      @click.stop.self="toH1"
                     >
                       {{ o.text }}
                     </a>
@@ -107,106 +110,106 @@
 </template>
 
 <script>
-import http from "../../plugins/http/http";
-import { mapState, mapGetters } from "vuex";
-import Comment from "../../components/comment";
-import { formatPassTime } from "@/utils/date";
+import { mapState } from 'vuex'
+import http from '../../plugins/http/http'
+import Comment from '../../components/comment'
+import { formatPassTime } from '@/utils/date'
 
 export default {
-  name: "Post",
+  name: 'Post',
   components: {
-    Comment,
+    Comment
+  },
+  filters: {
+    timeAgo(d) {
+      return d && formatPassTime(new Date(d))
+    }
   },
   data() {
     return {
       post: {},
-      navList: [],
-    };
-  },
-  filters: {
-    timeAgo(d) {
-      return d && formatPassTime(new Date(d));
-    },
+      navList: []
+    }
   },
   computed: {
     ...mapState({
-      userName: (state) => state.blog.userName,
-    }),
+      userName: (state) => state.blog.userName
+    })
   },
   watch: {
     $route() {
       // 标签分类
       if (this.$route.query.label) {
-        this.getIssueList(1, 50);
+        this.getIssueList(1, 50)
       } else {
         // 普通分页
-        this.getIssueList(this.page, this.number);
+        this.getIssueList(this.page, this.number)
       }
     },
     searchKeyWords(val) {
-      this.getIssueList(1, 50, false, val);
-    },
+      this.getIssueList(1, 50, false, val)
+    }
+  },
+  created() {
+    // this.$q.loading.show({ delay: 250 });
+    this.getIssue()
+  },
+  mounted() {
+    console.log('nav', this.navList)
   },
   methods: {
     getIssue() {
       http
         .get(
-          `/repos/${this.$store.getters["blog/repository"]}/issues/${this.$route.query.id}`
+          `/repos/${this.$store.getters['blog/repository']}/issues/${this.$route.query.id}`
         )
         .then((res) => {
-          this.post = res.data;
-          let i = -1;
-          let h2Index = -1;
+          this.post = res.data
+          let i = -1
+          let h2Index = -1
 
           this.post.body_html = res.data.body_html.replace(
             /<h([2-3]) (.*?)>(.*?)<\/h[2-3]>/g,
             (_, hType, style, text) => {
-              i++;
-              let id = `heading-H${hType}-${i}`;
+              i++
+              const id = `heading-H${hType}-${i}`
 
-              if (hType === "2") {
-                h2Index++;
+              if (hType === '2') {
+                h2Index++
                 this.navList.push({
-                  type: "H" + hType,
+                  type: 'H' + hType,
                   text: text,
                   id,
-                  children: [],
-                });
+                  children: []
+                })
               } else {
                 this.navList[h2Index].children.push({
-                  type: "H" + hType,
+                  type: 'H' + hType,
                   text: text,
-                  id,
-                });
+                  id
+                })
               }
-              return `<h${hType} id=${id}>${text}</h${hType}>`;
+              return `<h${hType} id=${id}>${text}</h${hType}>`
             }
-          );
+          )
           // this.$q.loading.hide();
         })
         .catch((err) => {
           if (err.response.status === 404) {
-            this.$router.push("/404");
+            this.$router.push('/404')
           }
-        });
+        })
     },
     chipClickHandler(labelName) {
-      this.$router.push(`/labels/?label=${labelName}`);
+      this.$router.push(`/labels/?label=${labelName}`)
     },
     toH1(e) {
-      e.preventDefault();
-      let toElement = document.querySelector(e.target.hash);
-      toElement && toElement.scrollIntoView(true);
-    },
-  },
-  created() {
-    // this.$q.loading.show({ delay: 250 });
-    this.getIssue();
-  },
-  mounted() {
-    console.log("nav", this.navList);
-  },
-};
+      e.preventDefault()
+      const toElement = document.querySelector(e.target.hash)
+      toElement && toElement.scrollIntoView(true)
+    }
+  }
+}
 </script>
 
 <style lang="scss" scoped>
@@ -401,7 +404,7 @@ export default {
 }
 
 .catalog-list .item.active > .a-container:before {
-  content: "";
+  content: '';
   position: absolute;
   top: -4px;
   left: 0;

@@ -1,36 +1,36 @@
-import http from "../plugins/http/http";
-import { displayCodeText } from "@/utils";
+import http from '../plugins/http/http'
+import { displayCodeText } from '@/utils'
 
 export const state = () => ({
   labelList: [],
   page: 1,
   total_count: 0,
-  pending: false,
-});
+  pending: false
+})
 
-export const getters = {};
+export const getters = {}
 
 export const mutations = {
   updateLabelList(state, data) {
-    state.page = data.page;
-    state.pending = false;
-    state.labelList = [...state.labelList, ...data.posts];
-    state.total_count = data.total_count;
+    state.page = data.page
+    state.pending = false
+    state.labelList = [...state.labelList, ...data.posts]
+    state.total_count = data.total_count
   },
   resetPage(state) {
-    state.page = 1;
-    state.labelList = [];
-    state.total_count = 0;
-  },
-};
+    state.page = 1
+    state.labelList = []
+    state.total_count = 0
+  }
+}
 
 export const actions = {
   async getIssueListByLabel(
     { commit, state, rootState, rootGetters, getters },
-    { page = 1, label = "", number = 25 }
+    { page = 1, label = '', number = 25 }
   ) {
-    let url = `/search/issues?q=+repo:${rootGetters["blog/repository"]}+label:${label}+state:open&page=${page}&per_page=${number}`;
-    state.pending = true;
+    const url = `/search/issues?q=+repo:${rootGetters['blog/repository']}+label:${label}+state:open&page=${page}&per_page=${number}`
+    state.pending = true
     await http.get(url).then((res) => {
       // 分页模式 拼接数据
 
@@ -44,16 +44,16 @@ export const actions = {
             return {
               color,
               name,
-              id,
-            };
-          }),
-        };
-      });
-      commit("updateLabelList", {
+              id
+            }
+          })
+        }
+      })
+      commit('updateLabelList', {
         page,
         posts,
-        total_count: res.data.total_count,
-      });
-    });
-  },
-};
+        total_count: res.data.total_count
+      })
+    })
+  }
+}

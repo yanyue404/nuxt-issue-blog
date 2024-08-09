@@ -1,11 +1,12 @@
 /**
  * vuex状态树根节点
  */
-//使用非严格模式
-export const strict = false;
+// 使用非严格模式
 
-export const state = () => ({});
+export const strict = false
 
-export const mutations = {};
+export const state = () => ({})
 
-export const actions = {};
+export const mutations = {}
+
+export const actions = {}

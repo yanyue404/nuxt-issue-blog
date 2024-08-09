@@ -1,9 +1,9 @@
 <template>
   <div class="card-list">
-    <div class="card-container" v-show="pending">
+    <div v-show="pending" class="card-container">
       <el-skeleton style="width: 100%; padding: 8px 16px 8px 32px" animated>
         <template slot="template">
-          <div class="empty-block" v-for="item in emptyArr" :key="item">
+          <div v-for="item in emptyArr" :key="item" class="empty-block">
             <div class="flex-sb-c">
               <el-skeleton-item variant="h6" style="width: 50%" />
               <el-skeleton-item
@@ -21,8 +21,8 @@
         </template>
       </el-skeleton>
     </div>
-    <div class="card-container" v-show="!pending">
-      <div class="card" v-for="post in postList" :key="post.index">
+    <div v-show="!pending" class="card-container">
+      <div v-for="post in postList" :key="post.index" class="card">
         <div class="q-item">
           <div
             class="q-item__section q-item__section--main"
@@ -42,11 +42,11 @@
           <div class="q-item__section column">
             <div
               v-for="label in post.labels"
+              :key="label.index"
               outline
               square
               clickable
               class="q-chip label"
-              :key="label.index"
               :style="`border-color: 1px solid rgba(27,31,35,.2); color: #fff;background: #${label.color}!important`"
               @click="chipClickHandler(label.name)"
             >
@@ -60,38 +60,38 @@
 </template>
 
 <script>
-import { dateFormat } from "@/utils/date";
+import { dateFormat } from '@/utils/date'
 export default {
-  name: "Item",
+  name: 'Item',
+  filters: {
+    dateFormate(d) {
+      return dateFormat('YYYY-MM-dd hh:mm:ss', new Date(d))
+    },
+    htmlToText(h) {
+      return h.replace(/<\/?.+?>/g, '')
+    }
+  },
   props: {
     pending: Boolean,
     postList: {
       type: Array,
-      required: true,
-    },
-  },
-  filters: {
-    dateFormate(d) {
-      return dateFormat("YYYY-MM-dd hh:mm:ss", new Date(d));
-    },
-    htmlToText(h) {
-      return h.replace(/<\/?.+?>/g, "");
-    },
+      required: true
+    }
   },
   data() {
     return {
-      emptyArr: Array.from({ length: 10 }, (_, i) => i),
-    };
+      emptyArr: Array.from({ length: 10 }, (_, i) => i)
+    }
   },
   methods: {
     toPostDetail(id) {
-      this.$router.push(`/posts/?id=${id}`);
+      this.$router.push(`/posts/?id=${id}`)
     },
     chipClickHandler(labelName) {
-      this.$router.push(`/labels/?name=${labelName}`);
-    },
-  },
-};
+      this.$router.push(`/labels/?name=${labelName}`)
+    }
+  }
+}
 </script>
 
 <style scoped lang="scss">

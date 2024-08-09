@@ -3,9 +3,9 @@
     <h2>留言（{{ comments.length }} 条）</h2>
     <ul
       v-for="comment in comments"
+      :key="comment.index"
       bordered
       class="comment rounded-borders q-mt-lg"
-      :key="comment.index"
     >
       <div class="q-pa-md">
         <div class="item-section">
@@ -17,7 +17,7 @@
             {{ comment.updated_at | timeAgo }}</span
           >
         </div>
-        <div v-html="comment.body_html" class="q-pt-sm"></div>
+        <div class="q-pt-sm" v-html="comment.body_html"></div>
       </div>
     </ul>
     <div class="comment-btn">
@@ -30,39 +30,39 @@
 </template>
 
 <script>
-import { formatPassTime } from "@/utils/date";
-import http from "../plugins/http/http";
+import http from '../plugins/http/http'
+import { formatPassTime } from '@/utils/date'
 export default {
-  name: "Comment",
+  name: 'Comment',
+  filters: {
+    timeAgo(d) {
+      return formatPassTime(new Date(d))
+    }
+  },
   data() {
     return {
       comments: [],
-      addCommentUrl: `https://github.com/${this.$store.getters["blog/repository"]}/issues/${this.$route.query.id}/#new_comment_field`,
-    };
+      addCommentUrl: `https://github.com/${this.$store.getters['blog/repository']}/issues/${this.$route.query.id}/#new_comment_field`
+    }
   },
-  filters: {
-    timeAgo(d) {
-      return formatPassTime(new Date(d));
-    },
+  created() {
+    this.getComments()
   },
   methods: {
     getComments() {
       http
         .get(
-          `/repos/${this.$store.getters["blog/repository"]}/issues/${this.$route.query.id}/comments`
+          `/repos/${this.$store.getters['blog/repository']}/issues/${this.$route.query.id}/comments`
         )
         .then((res) => {
-          this.$set(this, "comments", res.data);
-        });
+          this.$set(this, 'comments', res.data)
+        })
     },
     goAddComment() {
-      location.href = this.addCommentUrl;
-    },
-  },
-  created() {
-    this.getComments();
-  },
-};
+      location.href = this.addCommentUrl
+    }
+  }
+}
 </script>
 
 <style scoped lang="scss">

@@ -2,44 +2,45 @@
   <el-switch
     class="dark-change"
     :value="value"
-    @input="$emit('input', $event)"
     inactive-icon-class="light"
     active-icon-class="dark"
     active-color="#282c35"
     inactive-color="#282c35"
+    @input="$emit('input', $event)"
   >
   </el-switch>
 </template>
 <script>
-import darken from "darken";
+import Darken from 'darken'
 
 export default {
   props: {
-    value: Boolean,
+    value: Boolean
   },
   data() {
-    return {};
+    return {}
   },
   mounted() {
     // https://github.com/ColinEspinas/darken
-    const darkmode = new darken({
-      class: "darkmode-active",
+
+    new Darken({
+      class: 'darkmode-active',
       variables: {
-        "--markdown-body": ["#24292e", "#fff"],
-        "--theme-color": ["rgb(9, 105, 218)", "#ffa7c4"],
-        "--primary-color": ["#000000", "#fafafa"],
-        "--background-color": ["#fff", "#0d1117"],
-        "--textNormal": ["#353535", "hsla(0,0%,100%,0.88)"],
+        '--markdown-body': ['#24292e', '#fff'],
+        '--theme-color': ['rgb(9, 105, 218)', '#ffa7c4'],
+        '--primary-color': ['#000000', '#fafafa'],
+        '--background-color': ['#fff', '#0d1117'],
+        '--textNormal': ['#353535', 'hsla(0,0%,100%,0.88)']
       },
-      toggle: "#darkmode-button",
+      toggle: '#darkmode-button',
       stylesheets: {
-        id: "darkmode-stylesheet",
-        dark: "./css/github-markdown-dark.css",
-        light: "./css/github-markdown-light.css",
-      },
-    });
-  },
-};
+        id: 'darkmode-stylesheet',
+        dark: './css/github-markdown-dark.css',
+        light: './css/github-markdown-light.css'
+      }
+    })
+  }
+}
 </script>
 <style lang="scss" scoped>
 ::v-deep {
