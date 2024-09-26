@@ -78,13 +78,6 @@ export default {
             camel2DashComponentName: false
           },
           'lodash'
-        ],
-        [
-          'component',
-          {
-            libraryName: 'element-ui',
-            styleLibraryName: 'theme-chalk'
-          }
         ]
       ]
     },
