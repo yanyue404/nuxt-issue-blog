@@ -43,11 +43,8 @@
             <div
               v-for="label in post.labels"
               :key="label.index"
-              outline
-              square
-              clickable
-              class="q-chip label"
-              :style="`border-color: 1px solid rgba(27,31,35,.2); color: #fff;background: #${label.color}!important`"
+              class="tag-label"
+              :style="`--label-color: #${label.color}`"
               @click="chipClickHandler(label.name)"
             >
               {{ label.name }}
@@ -67,8 +64,15 @@ export default {
     dateFormate(d) {
       return dateFormat('YYYY-MM-dd hh:mm:ss', new Date(d))
     },
-    htmlToText(h) {
-      return h.replace(/<\/?.+?>/g, '')
+    htmlToText(html) {
+      return (
+        html
+          .replace(/<\/?.+?>/g, '') // 移除HTML标签
+          .replace(/\s+/g, ' ') // 合并空白字符
+          .replace(/&[a-zA-Z]+;/g, '') // 移除HTML实体
+          .trim()
+          .substring(0, 200) + '...'
+      ) // 限制字符长度
     }
   },
   props: {
@@ -145,9 +149,18 @@ export default {
   min-height: 48px;
   padding: 8px 16px;
   color: inherit;
-  transition: color 0.3s, background-color 0.3s;
+  transition: all 0.3s ease;
   cursor: pointer !important;
   border-top: 1px solid rgba(0, 0, 0, 0.125);
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+
+    .q-item__label {
+      color: var(--theme-color);
+    }
+  }
 }
 .card:nth-of-type(1) .q-item {
   margin-top: 0;
@@ -156,11 +169,41 @@ export default {
 
 .q-item__label {
   display: -webkit-box;
-  word-break: break-all;
-  text-overflow: ellipsis;
-  overflow: hidden;
   -webkit-box-orient: vertical;
-  -webkit-line-clamp: 4;
+  -webkit-line-clamp: 3;
+  overflow: hidden;
+  word-break: break-word;
+  text-overflow: ellipsis;
+  line-height: 1.8;
+  color: var(--textNormal);
+  font-size: 14px;
+  margin: 8px 0;
+  padding: 0;
+
+  position: relative;
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 100%;
+    height: 24px;
+    background: linear-gradient(
+      to bottom,
+      transparent,
+      var(--background-color)
+    );
+  }
+
+  p {
+    margin: 0.5em 0;
+  }
+
+  @media (max-width: 767px) {
+    font-size: 13px;
+    line-height: 1.6;
+    -webkit-line-clamp: 2;
+  }
 }
 .q-item__label + .q-item__label {
   margin-top: 4px;
@@ -204,5 +247,30 @@ export default {
 
 .column {
   flex-direction: column;
+}
+
+.tag-label {
+  display: inline-block;
+  padding: 4px 12px;
+  margin: 0 8px 8px 0;
+  font-size: 0.85rem;
+  font-weight: 500;
+  border-radius: 15px;
+  cursor: pointer;
+  background: var(--label-color);
+  color: #fff;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    filter: brightness(110%);
+  }
+
+  &:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
 }
 </style>

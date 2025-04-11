@@ -30,6 +30,7 @@ export default {
         '--theme-color': ['rgb(9, 105, 218)', '#ffa7c4'],
         '--primary-color': ['#000000', '#fafafa'],
         '--background-color': ['#fff', '#0d1117'],
+        '--card-bg': ['#fff', '#0d1117'],
         '--textNormal': ['#353535', 'hsla(0,0%,100%,0.88)']
       },
       toggle: '#darkmode-button',

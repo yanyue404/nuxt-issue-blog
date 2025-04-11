@@ -80,7 +80,7 @@
                   class="catalog-aTag d1-aTag-title"
                   @click.stop.self="toH1"
                 >
-                  {{ item.text }}
+                  {{ toText(item.text) }}
                 </a>
               </div>
               <ul v-show="item.children.length > 0" class="sub-list">
@@ -96,7 +96,7 @@
                       class="catalog-aTag d1-aTag-title"
                       @click.stop.self="toH1"
                     >
-                      {{ o.text }}
+                      {{ toText(o.text) }}
                     </a>
                   </div>
                 </li>
@@ -207,6 +207,9 @@ export default {
       e.preventDefault()
       const toElement = document.querySelector(e.target.hash)
       toElement && toElement.scrollIntoView(true)
+    },
+    toText(text) {
+      return text.replace(/<[^>]*>/g, '')
     }
   }
 }
@@ -241,32 +244,137 @@ export default {
 }
 .article-catalog {
   position: sticky;
-  top: 0px;
+  top: 20px;
   width: 300px;
-  margin-right: -15px;
   background: var(--background-color);
-  border-radius: 6px;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
+  border-radius: 12px;
+  padding: 16px 0;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+
+  &:hover {
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.08);
+  }
+
   .catalog-title {
-    font-weight: 500;
-    margin: 0 1.667rem;
-    font-size: 16px;
-    line-height: 2rem;
+    padding: 0 24px;
+    margin-bottom: 12px;
+    font-size: 18px;
+    font-weight: 600;
     color: var(--theme-color);
-    border-bottom: 1px solid #e4e6eb;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    height: 56px;
-    .direction {
-      color: #8a919f;
-      display: flex;
-      font-size: 13px;
-      font-weight: 400;
-      align-items: center;
-      cursor: pointer;
+    line-height: 1.5;
+    border-bottom: 2px solid #eee;
+    padding-bottom: 12px;
+
+    div {
+      position: relative;
+      display: inline-block;
+
+      &::after {
+        content: '';
+        position: absolute;
+        bottom: -14px;
+        left: 0;
+        width: 100%;
+        height: 2px;
+        background: var(--theme-color);
+        transition: all 0.3s ease;
+      }
+    }
+  }
+
+  .catalog-body {
+    max-height: calc(100vh - 200px);
+    overflow-y: auto;
+    padding: 0 8px;
+
+    &::-webkit-scrollbar {
+      width: 4px;
+    }
+
+    &::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      background: #e0e0e0;
+      border-radius: 4px;
+
+      &:hover {
+        background: #d0d0d0;
+      }
+    }
+  }
+
+  .catalog-list {
+    .item {
+      margin: 4px 0;
+
+      .a-container {
+        position: relative;
+        border-radius: 6px;
+        transition: all 0.2s ease;
+
+        &:hover {
+          background: rgba(30, 128, 255, 0.05);
+        }
+      }
+
+      .catalog-aTag {
+        display: block;
+        padding: 8px 16px;
+        color: #666;
+        font-size: 14px;
+        line-height: 1.5;
+        transition: all 0.2s ease;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+
+        &:hover {
+          color: var(--theme-color);
+        }
+      }
+
+      &.active {
+        > .a-container {
+          background: rgba(30, 128, 255, 0.08);
+
+          .catalog-aTag {
+            color: var(--theme-color);
+            font-weight: 500;
+          }
+
+          &::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 3px;
+            height: 24px;
+            background: var(--theme-color);
+            border-radius: 0 3px 3px 0;
+          }
+        }
+      }
+
+      &.d1 {
+        .catalog-aTag {
+          font-weight: 500;
+          color: #333;
+        }
+      }
+
+      &.d3 {
+        .a-container {
+          padding-left: 24px;
+
+          &::before {
+            left: 24px;
+          }
+        }
+      }
     }
   }
 }

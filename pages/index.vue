@@ -109,8 +109,34 @@ export default {
   margin-bottom: 16px;
   text-align: center;
 
-  ::v-deep .el-pagination.is-background .el-pager li:not(.disabled).active {
-    background-color: var(--theme-color) !important;
+  ::v-deep .el-pagination {
+    &.is-background {
+      .el-pager li:not(.disabled) {
+        &.active {
+          background-color: var(--theme-color) !important;
+          color: #fff;
+
+          &:hover {
+            opacity: 0.8;
+          }
+        }
+
+        &:not(.active):hover {
+          color: var(--theme-color);
+        }
+      }
+
+      .btn-prev,
+      .btn-next {
+        &:hover {
+          color: var(--theme-color);
+        }
+      }
+    }
+
+    button:disabled {
+      background-color: #f4f4f5;
+    }
   }
 }
 </style>

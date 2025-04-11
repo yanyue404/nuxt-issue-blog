@@ -42,7 +42,7 @@ export default {
   data() {
     return {
       comments: [],
-      addCommentUrl: `https://github.com/${this.$store.getters['blog/repository']}/issues/${this.$route.query.id}/#new_comment_field`
+      addCommentUrl: `https://github.com/${this.$store.getters['blog/repository']}/issues/${this.$route.query.id}`
     }
   },
   created() {
