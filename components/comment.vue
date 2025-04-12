@@ -129,18 +129,34 @@ export default {
       const seriesHeadings = []
       headings.forEach((heading) => {
         i++
-        const hType = heading.tagName.charAt(1) // 获取标题级别（2或3）
-        const id = `series-heading-${commentId}-H${hType}-${i}`
+        const tagName = heading.tagName.toLowerCase() // h2 或 h3
+        const hType = tagName === 'h2' ? 'H2' : 'H3' // 转换为 H2 或 H3
+        const id = `series-heading-${commentId}-${hType}-${i}`
 
         // 为标题添加 id
         heading.id = id
 
-        // 收集标题信息
+        // 收集标题信息，添加正确的类型
         seriesHeadings.push({
           id,
-          type: `H${hType}`,
-          text: heading.textContent.trim()
+          type: hType, // 确保类型是 H2 或 H3
+          text: heading.textContent.trim(),
+          level: tagName === 'h2' ? 2 : 3 // 可选：添加层级信息
         })
+      })
+
+      // 按层级组织标题
+      const organizedHeadings = []
+      let currentH2 = null
+
+      seriesHeadings.forEach((heading) => {
+        if (heading.type === 'H2') {
+          currentH2 = heading
+          currentH2.children = []
+          organizedHeadings.push(currentH2)
+        } else if (heading.type === 'H3' && currentH2) {
+          currentH2.children.push(heading)
+        }
       })
 
       // 发送标题数据给父组件
@@ -148,8 +164,9 @@ export default {
         this.$nextTick(() => {
           const seriesNav = {
             text: '连载文章',
-            children: seriesHeadings
+            children: organizedHeadings // 使用组织好的标题结构
           }
+
           this.$emit('series-content-updated', seriesNav)
         })
       }
@@ -204,23 +221,6 @@ export default {
       document.querySelectorAll('.series-content').forEach((content) => {
         observer.observe(content)
       })
-    },
-
-    processedContent(content) {
-      // 处理连载文章的内容，为标题添加 id
-      let i = -1
-      const processedHtml = (content || '').replace(
-        /<h([2-3]) (.*?)>(.*?)<\/h[2-3]>/g,
-        (_, hType, style, text) => {
-          i++
-          const id = `series-heading-H${hType}-${i}`
-          return `<h${hType} id="${id}">${text}</h${hType}>`
-        }
-      )
-
-      // 发送处理后的内容给父组件更新目录
-      this.$emit('series-content-updated', processedHtml)
-      return processedHtml
     }
   },
   mounted() {

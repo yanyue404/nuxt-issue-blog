@@ -105,6 +105,7 @@ export default {
     // 合并主文章和连载文章的目录
     allNavList() {
       // 确保 navList 存在且是数组
+
       const mainNavList = (this.navList || []).map((item) => ({
         ...item,
         type: 'H2',
@@ -167,12 +168,25 @@ export default {
                 this.navList.push({
                   text: text,
                   id,
+                  type: 'H2',
                   children: []
                 })
-              } else {
+              } else if (hType === '3' && h2Index >= 0) {
+                // 确保有父级 h2 标题
+                if (!this.navList[h2Index]) {
+                  // 如果没有父级 h2,创建一个默认分组
+                  h2Index++
+                  this.navList.push({
+                    text: '未分组',
+                    id: `default-h2-${h2Index}`,
+                    type: 'H2',
+                    children: []
+                  })
+                }
                 this.navList[h2Index].children.push({
                   text: text,
-                  id
+                  id,
+                  type: 'H3'
                 })
               }
               return `<h${hType} id="${id}">${text}</h${hType}>`
