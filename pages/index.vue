@@ -9,6 +9,7 @@
       :total_count="total_count"
       @page-change="handleCurrentChange"
     />
+    <Footer />
   </div>
 </template>
 
@@ -18,12 +19,14 @@ import { isServer, toNumber, getQueryString, debounce } from '@/utils'
 import Header from '@/components/Header.vue'
 import Nav from '@/components/Nav.vue'
 import BlogList from '@/components/BlogList.vue'
+import Footer from '@/components/Footer.vue'
 
 export default {
   components: {
     Header,
     Nav,
-    BlogList
+    BlogList,
+    Footer
   },
   data() {
     return {}

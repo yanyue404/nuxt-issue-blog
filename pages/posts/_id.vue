@@ -31,80 +31,38 @@
     <div v-show="post.id" class="main-area article-area" padding>
       <div class="article-header">
         <h1 class="rainbow">{{ post.title }}</h1>
-        <code class="text-italic"
-          >Updated by {{ userName }} {{ post.updated_at | timeAgo }}</code
-        >
+        <div class="header-bottom">
+          <code class="text-italic"
+            >Updated by {{ userName }} {{ post.updated_at | timeAgo }}</code
+          >
+          <el-button
+            type="primary"
+            size="small"
+            icon="el-icon-edit"
+            class="edit-button"
+            @click="goEditPost"
+          >
+            编辑文章
+          </el-button>
+        </div>
       </div>
       <div class="q-mt-lg" v-html="post.body_html" />
       <el-backtop />
-      <Comment></Comment>
+      <Comment
+        ref="commentComponent"
+        @series-content-updated="handleSeriesContentUpdated"
+      ></Comment>
     </div>
     <div class="article-gap"></div>
-    <!-- 目录的骨架屏 -->
-    <div v-show="!post.id" class="article-sideBar">
-      <nav class="article-catalog catalog-block">
-        <el-skeleton style="width: 100%" animated>
-          <template slot="template">
-            <div v-for="item in [1]" :key="item">
-              <el-skeleton-item
-                variant="h2"
-                style="width: 40%; margin-left: 18px"
-              />
-              <div style="padding: 14px">
-                <el-skeleton :rows="7" style="margin-left: 5px" animated />
-              </div>
-            </div>
-          </template>
-        </el-skeleton>
-      </nav>
-    </div>
-    <!-- 侧边栏 -->
+
+    <!-- 统一的目录 -->
     <div v-show="post.id" class="article-sideBar">
-      <!-- 导航目录 -->
-      <nav class="article-catalog catalog-block">
-        <div class="catalog-title">
-          <div>目录</div>
-        </div>
-        <div class="catalog-body unfold">
-          <ul class="catalog-list" style="margin-top: 0px">
-            <!-- active 给 li 是选中 -->
-            <li
-              v-for="(item, index) in navList"
-              :key="`${item.type}-${index}`"
-              class="item d1"
-            >
-              <div class="a-container">
-                <a
-                  :href="`#${item.id}`"
-                  :title="item.text"
-                  class="catalog-aTag d1-aTag-title"
-                  @click.stop.self="toH1"
-                >
-                  {{ toText(item.text) }}
-                </a>
-              </div>
-              <ul v-show="item.children.length > 0" class="sub-list">
-                <li
-                  v-for="(o, oIndex) in item.children"
-                  :key="`${o.type}-${oIndex}`"
-                  class="item d3"
-                >
-                  <div class="a-container">
-                    <a
-                      :href="`#${o.id}`"
-                      :title="o.text"
-                      class="catalog-aTag d1-aTag-title"
-                      @click.stop.self="toH1"
-                    >
-                      {{ toText(o.text) }}
-                    </a>
-                  </div>
-                </li>
-              </ul>
-            </li>
-          </ul>
-        </div>
-      </nav>
+      <Catalog
+        :nav-list="allNavList"
+        :active-id="activeId"
+        :base-path="currentPath"
+        @catalog-click="handleCatalogClick"
+      />
     </div>
   </div>
 </template>
@@ -113,12 +71,14 @@
 import { mapState } from 'vuex'
 import http from '../../plugins/http/http'
 import Comment from '../../components/comment'
+import Catalog from '../../components/Catalog'
 import { formatPassTime } from '@/utils/date'
 
 export default {
   name: 'Post',
   components: {
-    Comment
+    Comment,
+    Catalog
   },
   filters: {
     timeAgo(d) {
@@ -128,34 +88,62 @@ export default {
   data() {
     return {
       post: {},
-      navList: []
+      navList: [],
+      seriesNavList: [],
+      activeId: '',
+      seriesHeadings: [], // 存储所有连载文章的标题
+      allSeriesChildren: [] // 存储所有连载文章的目录项
     }
   },
   computed: {
     ...mapState({
       userName: (state) => state.blog.userName
-    })
+    }),
+    currentPath() {
+      return `/blog/posts/?id=${this.$route.query.id}`
+    },
+    // 合并主文章和连载文章的目录
+    allNavList() {
+      // 确保 navList 存在且是数组
+      const mainNavList = (this.navList || []).map((item) => ({
+        ...item,
+        type: 'H2',
+        children: (item.children || []).map((child) => ({
+          ...child,
+          type: 'H3'
+        }))
+      }))
+
+      // 确保 seriesNavList 存在且有内容
+      if (this.seriesNavList && this.seriesNavList.length > 0) {
+        mainNavList.push({
+          id: 'series-title',
+          type: 'H2',
+          text: '连载文章',
+          children: this.seriesNavList.map((item) => ({
+            ...item,
+            type: 'H3'
+          }))
+        })
+      }
+
+      return mainNavList
+    }
   },
   watch: {
     $route() {
-      // 标签分类
-      if (this.$route.query.label) {
-        this.getIssueList(1, 50)
-      } else {
-        // 普通分页
-        this.getIssueList(this.page, this.number)
-      }
-    },
-    searchKeyWords(val) {
-      this.getIssueList(1, 50, false, val)
+      // 路由变化时重新获取文章
+      this.getIssue()
+      this.resetSeriesChildren()
     }
   },
   created() {
     // this.$q.loading.show({ delay: 250 });
+    this.resetSeriesChildren()
     this.getIssue()
   },
   mounted() {
-    console.log('nav', this.navList)
+    this.initIntersectionObserver()
   },
   methods: {
     getIssue() {
@@ -172,24 +160,22 @@ export default {
             /<h([2-3]) (.*?)>(.*?)<\/h[2-3]>/g,
             (_, hType, style, text) => {
               i++
-              const id = `heading-H${hType}-${i}`
+              const id = `main-heading-H${hType}-${i}`
 
               if (hType === '2') {
                 h2Index++
                 this.navList.push({
-                  type: 'H' + hType,
                   text: text,
                   id,
                   children: []
                 })
               } else {
                 this.navList[h2Index].children.push({
-                  type: 'H' + hType,
                   text: text,
                   id
                 })
               }
-              return `<h${hType} id=${id}>${text}</h${hType}>`
+              return `<h${hType} id="${id}">${text}</h${hType}>`
             }
           )
           // this.$q.loading.hide();
@@ -206,10 +192,133 @@ export default {
     toH1(e) {
       e.preventDefault()
       const toElement = document.querySelector(e.target.hash)
-      toElement && toElement.scrollIntoView(true)
+      toElement && toElement.scrollIntoView({ behavior: 'smooth' })
     },
     toText(text) {
       return text.replace(/<[^>]*>/g, '')
+    },
+    handleSeriesContentUpdated(seriesNav) {
+      // 将新的目录项添加到集合中
+      this.allSeriesChildren = [
+        ...this.allSeriesChildren,
+        ...seriesNav.children
+      ]
+
+      // 找到现有的连载文章目录项或创建新的
+      const existingSeriesIndex = this.navList.findIndex(
+        (item) => item.text === '连载文章'
+      )
+
+      if (existingSeriesIndex >= 0) {
+        // 更新现有的连载文章目录，使用完整的集合
+        this.navList[existingSeriesIndex].children = this.allSeriesChildren
+      } else {
+        // 添加新的连载文章目录，使用完整的集合
+        this.navList.push({
+          text: '连载文章',
+          children: this.allSeriesChildren
+        })
+      }
+    },
+    initIntersectionObserver() {
+      const observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              this.activeId = entry.target.id
+            }
+          })
+        },
+        {
+          threshold: 0.5
+        }
+      )
+
+      this.$nextTick(() => {
+        document.querySelectorAll('h2, h3').forEach((heading) => {
+          observer.observe(heading)
+        })
+      })
+    },
+    handleCatalogClick(id) {
+      const element = document.getElementById(id)
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth' })
+        // 更新 URL
+        const newUrl = `${this.currentPath}#${id}`
+        window.history.replaceState(null, '', newUrl)
+      }
+    },
+    goEditPost() {
+      const editUrl = `https://github.com/${this.$store.getters['blog/repository']}/issues/${this.$route.query.id}`
+      window.open(editUrl, '_blank')
+    },
+    updateCurrentSeries() {
+      // 重置标题集合
+      this.seriesHeadings = []
+
+      // 获取所有连载文章内容
+      const seriesContents = document.querySelectorAll('.series-content')
+      if (!seriesContents.length) return
+
+      // 处理所有连载文章的内容
+      seriesContents.forEach((content) => {
+        this.processSeriesContent(content.innerHTML)
+      })
+    },
+    processSeriesContent(content) {
+      if (!content || typeof content !== 'string') {
+        console.warn('Invalid content provided to processSeriesContent')
+        return ''
+      }
+
+      // 创建临时 DOM 元素来解析 HTML
+      const tempDiv = document.createElement('div')
+      tempDiv.innerHTML = content
+
+      // 只获取 h2 和 h3 标签
+      const headings = tempDiv.querySelectorAll('h2, h3')
+      let i = -1
+
+      headings.forEach((heading) => {
+        i++
+        const hType = heading.tagName.charAt(1) // 获取标题级别（2或3）
+        const id = `series-heading-H${hType}-${i}`
+
+        // 收集标题信息
+        this.seriesHeadings.push({
+          id,
+          type: `H${hType}`,
+          text: this.stripHtml(heading.innerHTML)
+        })
+
+        // 为标题添加 id
+        heading.id = id
+      })
+
+      // 只在有处理结果时才发送更新
+      if (this.seriesHeadings.length > 0) {
+        this.$nextTick(() => {
+          const seriesNav = {
+            text: '连载文章',
+            children: this.seriesHeadings
+          }
+          this.handleSeriesContentUpdated(seriesNav)
+        })
+      }
+
+      return tempDiv.innerHTML
+    },
+    stripHtml(html) {
+      if (!html) return ''
+      return html
+        .replace(/<[^>]+>/g, '')
+        .replace(/&[^;]+;/g, '')
+        .trim()
+    },
+    // 在路由变化或组件创建时重置集合
+    resetSeriesChildren() {
+      this.allSeriesChildren = []
     }
   }
 }
@@ -222,7 +331,11 @@ export default {
   width: 100%;
 }
 .article-header {
-  margin-bottom: 10px;
+  margin-bottom: 20px;
+
+  h1 {
+    margin: 0 0 12px 0;
+  }
 }
 .article-area {
   position: relative;
@@ -553,6 +666,9 @@ export default {
   .el-backtop {
     color: var(--theme-color);
   }
+  .el-button--primary {
+    // 样式已移至 default.vue
+  }
 }
 .markdown-body {
   background-color: #f2f3f5 !important;
@@ -568,5 +684,48 @@ export default {
   a:active {
     color: #1e80ff;
   }
+}
+
+.series-title {
+  color: var(--theme-color);
+  font-weight: 600;
+  cursor: default;
+}
+
+.catalog-aTag {
+  &:hover {
+    color: var(--theme-color);
+  }
+}
+
+.active {
+  > .a-container > .catalog-aTag {
+    color: var(--theme-color);
+  }
+}
+
+.d2-aTag-title {
+  font-size: 13px;
+}
+
+.d3-aTag-title {
+  font-size: 12px;
+  color: var(--juejin-font-3);
+}
+
+.header-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.text-italic {
+  font-style: italic;
+  color: var(--juejin-font-3);
+  font-size: 14px;
+}
+
+::v-deep .edit-button {
+  // 样式已移至 default.vue
 }
 </style>

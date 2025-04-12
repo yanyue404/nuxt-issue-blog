@@ -15,7 +15,8 @@ export const state = () => ({
 export const getters = {
   repository(s) {
     return `${s.userName}/${s.repository}`
-  }
+  },
+  authorName: (state) => state.userName
 }
 
 export const mutations = {

@@ -28,6 +28,10 @@ export default {
       variables: {
         '--markdown-body': ['#24292e', '#fff'],
         '--theme-color': ['#3eaf7c', '#ffa7c4'],
+        '--theme-color-hover': [
+          'rgba(62, 175, 124, 0.8)',
+          'rgba(255, 167, 196, 0.8)'
+        ],
         '--primary-color': ['#000000', '#fafafa'],
         '--background-color': ['#fff', '#0d1117'],
         '--card-bg': ['rgba(255, 255, 255, 0.8)', 'rgba(255, 255, 255, 0.1)'],

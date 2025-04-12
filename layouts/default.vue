@@ -19,8 +19,17 @@ export default {
   margin: 0;
 }
 :root {
-  --theme-color-rgb: 62, 175, 124;
+  --markdown-body: #24292e;
+  --theme-color: #3eaf7c;
+  --theme-color-hover: rgba(62, 175, 124, 0.8);
+  --primary-color: #000000;
+  --background-color: #fff;
+  --card-bg: rgba(255, 255, 255, 0.8);
+  --textNormal: #353535;
   --border-color: rgba(0, 0, 0, 0.1);
+  --juejin-font-1: #252933;
+  --juejin-font-2: #515767;
+  --juejin-font-3: #8a919f;
 }
 body {
   background-color: #f2f3f5;
@@ -32,8 +41,7 @@ body {
   max-width: 1146px;
   margin: 0 auto;
   padding: 0 15px;
-  // padding: 45px;
-  // color: var(--markdown-body);
+  color: var(--markdown-body);
   background: var(--background-color);
   h1,
   h2,
@@ -68,6 +76,45 @@ body {
     &[width='90%'] {
       width: 90%;
     }
+  }
+}
+
+.el-button--primary {
+  background-color: var(--theme-color);
+  border-color: var(--theme-color);
+  color: #fff;
+  transition: all 0.3s ease;
+
+  &:hover,
+  &:focus {
+    color: #fff;
+    background-color: var(--theme-color-hover);
+    border-color: var(--theme-color-hover);
+    opacity: 0.9;
+  }
+
+  &:active {
+    color: #fff;
+    background-color: var(--theme-color);
+    border-color: var(--theme-color);
+  }
+}
+
+.edit-button {
+  padding: 8px 16px;
+
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  &:active {
+    transform: translateY(0);
+    box-shadow: none;
+  }
+
+  .el-icon-edit {
+    margin-right: 4px;
   }
 }
 </style>
