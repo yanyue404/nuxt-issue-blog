@@ -23,18 +23,18 @@
     </div>
     <!-- 这里要展示博客列表 -->
     <div v-show="labelList.length !== 0" padding>
-      <Item :postList="labelList" />
+      <BlogItem :postList="labelList" />
     </div>
   </div>
 </template>
 
 <script>
 import { mapState, mapMutations, mapActions } from 'vuex'
-import Item from '@/components/item.vue'
+import BlogItem from '@/components/BlogItem.vue'
 import reachBottom from '@/mixins/reachBottom'
 export default {
   components: {
-    Item
+    BlogItem
   },
   data() {
     return {

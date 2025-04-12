@@ -1,33 +1,29 @@
 <template>
   <div>
-    <div class="">
-      <!-- 这里要展示博客列表 -->
-      <div v-show="postList.length !== 0" padding>
-        <Item :pending="pending" :postList="postList" />
-        <div v-show="total_count > 25" class="paginate-container">
-          <el-pagination
-            background
-            layout="prev, pager, next"
-            :current-page.sync="pageNum"
-            :page-size="25"
-            :total="total_count"
-            @current-change="handleCurrentChange"
-          >
-          </el-pagination>
-        </div>
-      </div>
-    </div>
+    <Header />
+    <Nav />
+    <BlogList
+      :pending="pending"
+      :postList="postList"
+      :pageNum.sync="pageNum"
+      :total_count="total_count"
+      @page-change="handleCurrentChange"
+    />
   </div>
 </template>
 
 <script>
 import { mapState, mapMutations, mapActions } from 'vuex'
-import Item from '@/components/item.vue'
 import { isServer, toNumber, getQueryString, debounce } from '@/utils'
+import Header from '@/components/Header.vue'
+import Nav from '@/components/Nav.vue'
+import BlogList from '@/components/BlogList.vue'
 
 export default {
   components: {
-    Item
+    Header,
+    Nav,
+    BlogList
   },
   data() {
     return {}
@@ -101,42 +97,4 @@ export default {
   }
 }
 </script>
-<style lang="scss" scoped>
-.paginate-container {
-  display: flex;
-  justify-content: center;
-  margin-top: 16px;
-  margin-bottom: 16px;
-  text-align: center;
-
-  ::v-deep .el-pagination {
-    &.is-background {
-      .el-pager li:not(.disabled) {
-        &.active {
-          background-color: var(--theme-color) !important;
-          color: #fff;
-
-          &:hover {
-            opacity: 0.8;
-          }
-        }
-
-        &:not(.active):hover {
-          color: var(--theme-color);
-        }
-      }
-
-      .btn-prev,
-      .btn-next {
-        &:hover {
-          color: var(--theme-color);
-        }
-      }
-    }
-
-    button:disabled {
-      background-color: #f4f4f5;
-    }
-  }
-}
-</style>
+<style lang="scss" scoped></style>

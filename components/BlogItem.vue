@@ -22,7 +22,7 @@
       </el-skeleton>
     </div>
     <div v-show="!pending" class="card-container">
-      <div v-for="post in postList" :key="post.index" class="card">
+      <div v-for="(post, index) in postList" :key="index" class="card">
         <div class="q-item">
           <div
             class="q-item__section q-item__section--main"
@@ -76,10 +76,13 @@ export default {
     }
   },
   props: {
-    pending: Boolean,
+    pending: {
+      type: Boolean,
+      default: false
+    },
     postList: {
       type: Array,
-      required: true
+      default: () => []
     }
   },
   data() {
@@ -93,6 +96,13 @@ export default {
     },
     chipClickHandler(labelName) {
       this.$router.push(`/labels/?name=${labelName}`)
+    },
+    processPost(post) {
+      return {
+        title: post.title,
+        description: post.description
+        // 其他需要的属性
+      }
     }
   }
 }

@@ -27,10 +27,10 @@ export default {
       class: 'darkmode-active',
       variables: {
         '--markdown-body': ['#24292e', '#fff'],
-        '--theme-color': ['rgb(9, 105, 218)', '#ffa7c4'],
+        '--theme-color': ['#3eaf7c', '#ffa7c4'],
         '--primary-color': ['#000000', '#fafafa'],
         '--background-color': ['#fff', '#0d1117'],
-        '--card-bg': ['#fff', '#0d1117'],
+        '--card-bg': ['rgba(255, 255, 255, 0.8)', 'rgba(255, 255, 255, 0.1)'],
         '--textNormal': ['#353535', 'hsla(0,0%,100%,0.88)']
       },
       toggle: '#darkmode-button',
