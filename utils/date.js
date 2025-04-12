@@ -1,4 +1,4 @@
-import { isString } from "lodash";
+import { isString } from 'lodash'
 /**
  * 距离指定时间（未指定时，计算当前日期）多久前（后）
  * @param {Date|String} date 字符串日期  YYYY-MM-dd ||
@@ -8,14 +8,14 @@ import { isString } from "lodash";
  * @returns {Date}
  */
 export function getRangeToDate({ date, y = 0, m = 0, d = 0 } = {}) {
-  var now = new Date();
+  var now = new Date()
   if (date) {
-    now = isString(date) ? new Date(date.replace(/-/g, "/")) : date;
+    now = isString(date) ? new Date(date.replace(/-/g, '/')) : date
   }
-  now.setFullYear(now.getFullYear() + y);
-  now.setMonth(now.getMonth() + m);
-  now.setDate(now.getDate() + d);
-  return now;
+  now.setFullYear(now.getFullYear() + y)
+  now.setMonth(now.getMonth() + m)
+  now.setDate(now.getDate() + d)
+  return now
 }
 
 /**
@@ -27,12 +27,12 @@ export function getRangeToDate({ date, y = 0, m = 0, d = 0 } = {}) {
  * @returns {String} 'YYYY-MM-DD'
  */
 export function getRangeToStrDate(params = {}) {
-  var now = getRangeToDate(params);
-  var sy = now.getFullYear();
+  var now = getRangeToDate(params)
+  var sy = now.getFullYear()
   var sm =
-    now.getMonth() + 1 < 10 ? "0" + (now.getMonth() + 1) : now.getMonth() + 1;
-  var sd = now.getDate() < 10 ? "0" + now.getDate() : now.getDate();
-  return sy + "-" + sm + "-" + sd;
+    now.getMonth() + 1 < 10 ? '0' + (now.getMonth() + 1) : now.getMonth() + 1
+  var sd = now.getDate() < 10 ? '0' + now.getDate() : now.getDate()
+  return sy + '-' + sm + '-' + sd
 }
 
 /**
@@ -45,18 +45,18 @@ export function getRangeToStrDate(params = {}) {
  */
 export function compareDate(strDataMax, strDateMin, containEq) {
   if (!strDataMax || !strDateMin) {
-    console.error(`compareDate ====>> ${strDataMax} === ${strDateMin}`);
-    return;
+    console.error(`compareDate ====>> ${strDataMax} === ${strDateMin}`)
+    return
   }
   if (isString(strDataMax)) {
-    strDataMax = strToDate(strDataMax);
+    strDataMax = strToDate(strDataMax)
   }
   if (isString(strDateMin)) {
-    strDateMin = strToDate(strDateMin);
+    strDateMin = strToDate(strDateMin)
   }
-  let maxTime = strDataMax.getTime();
-  let minTime = strDateMin.getTime();
-  return containEq ? maxTime >= minTime : maxTime > minTime;
+  let maxTime = strDataMax.getTime()
+  let minTime = strDateMin.getTime()
+  return containEq ? maxTime >= minTime : maxTime > minTime
 }
 
 /**
@@ -66,11 +66,11 @@ export function compareDate(strDataMax, strDateMin, containEq) {
  */
 export function strToDate(str) {
   if (str) {
-    var arr = str.split("-");
-    arr[1] = arr[1] - 1;
-    return new Date(...arr);
+    var arr = str.split('-')
+    arr[1] = arr[1] - 1
+    return new Date(...arr)
   }
-  console.warn(`strToDate ===>  请传入YYYY-MM-dd格式的日期. 你传人的是 ${str}`);
+  console.warn(`strToDate ===>  请传入YYYY-MM-dd格式的日期. 你传人的是 ${str}`)
 }
 
 /**
@@ -79,31 +79,31 @@ export function strToDate(str) {
  * @param {Date} date
  */
 export function dateFormat(fmt, date) {
-  date = date || new Date();
+  date = date || new Date()
   var o = {
-    "M+": date.getMonth() + 1, //月份
-    "d+": date.getDate(), //日
-    "h+": date.getHours(), //小时
-    "m+": date.getMinutes(), //分
-    "s+": date.getSeconds(), //秒
-    "q+": Math.floor((date.getMonth() + 3) / 3), //季度
-    S: date.getMilliseconds(), //毫秒
-  };
+    'M+': date.getMonth() + 1, //月份
+    'd+': date.getDate(), //日
+    'h+': date.getHours(), //小时
+    'm+': date.getMinutes(), //分
+    's+': date.getSeconds(), //秒
+    'q+': Math.floor((date.getMonth() + 3) / 3), //季度
+    S: date.getMilliseconds() //毫秒
+  }
   if (/([yY]+)/.test(fmt)) {
     fmt = fmt.replace(
       RegExp.$1,
-      (date.getFullYear() + "").substr(4 - RegExp.$1.length)
-    );
+      (date.getFullYear() + '').substr(4 - RegExp.$1.length)
+    )
   }
   for (var k in o) {
-    if (new RegExp("(" + k + ")").test(fmt)) {
+    if (new RegExp('(' + k + ')').test(fmt)) {
       fmt = fmt.replace(
         RegExp.$1,
-        RegExp.$1.length == 1 ? o[k] : ("00" + o[k]).substr(("" + o[k]).length)
-      );
+        RegExp.$1.length == 1 ? o[k] : ('00' + o[k]).substr(('' + o[k]).length)
+      )
     }
   }
-  return fmt;
+  return fmt
 }
 
 /**
@@ -111,24 +111,46 @@ export function dateFormat(fmt, date) {
  * @param  {Date} startTime
  * @return {String}
  */
-export function formatPassTime(startTime) {
-  var currentTime = Date.parse(new Date()),
-    time = currentTime - startTime,
-    day = parseInt(time / (1000 * 60 * 60 * 24)),
-    hour = parseInt(time / (1000 * 60 * 60)),
-    min = parseInt(time / (1000 * 60)),
-    month = parseInt(day / 30),
-    year = parseInt(month / 12);
+export function formatPassTime(dateTime) {
+  if (!dateTime) return ''
 
-  if (year) return year + "年前";
+  const now = new Date().getTime()
+  const timestamp = new Date(dateTime).getTime()
+  const passTime = now - timestamp
 
-  if (month) return month + "个月前";
+  const minute = 1000 * 60
+  const hour = minute * 60
+  const day = hour * 24
+  const month = day * 30
+  const year = month * 12
 
-  if (day) return day + "天前";
+  if (passTime < minute) {
+    return '刚刚'
+  } else if (passTime < hour) {
+    return Math.floor(passTime / minute) + '分钟前'
+  } else if (passTime < day) {
+    return Math.floor(passTime / hour) + '小时前'
+  } else if (passTime < month) {
+    return Math.floor(passTime / day) + '天前'
+  } else if (passTime < year) {
+    return Math.floor(passTime / month) + '个月前'
+  } else {
+    return Math.floor(passTime / year) + '年前'
+  }
+}
 
-  if (hour) return hour + "小时前";
+export function formatDateTime(dateTime, showHour = false) {
+  if (!dateTime) return ''
 
-  if (min) return min + "分钟前";
+  const date = new Date(dateTime)
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  const hour = String(date.getHours()).padStart(2, '0')
+  const minute = String(date.getMinutes()).padStart(2, '0')
 
-  return "刚刚";
+  if (showHour) {
+    return `${year}-${month}-${day} ${hour}:${minute}`
+  }
+  return `${year}-${month}-${day}`
 }

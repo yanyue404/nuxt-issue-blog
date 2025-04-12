@@ -92,10 +92,10 @@ export default {
   },
   methods: {
     toPostDetail(id) {
-      this.$router.push(`/posts/?id=${id}`)
+      this.$router.push(`/post/?id=${id}`)
     },
     chipClickHandler(labelName) {
-      this.$router.push(`/labels/?name=${labelName}`)
+      this.$router.push(`/label/?name=${labelName}`)
     },
     processPost(post) {
       return {

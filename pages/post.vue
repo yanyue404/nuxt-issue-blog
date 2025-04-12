@@ -29,12 +29,18 @@
     </div>
     <!-- 加载完毕 -->
     <div v-show="post.id" class="main-area article-area" padding>
-      <div class="article-header">
-        <h1 class="rainbow">{{ post.title }}</h1>
-        <div class="header-bottom">
-          <code class="text-italic"
-            >Updated by {{ userName }} {{ post.updated_at | timeAgo }}</code
-          >
+      <PageHeader
+        :title="post.title"
+        :meta="[
+          { icon: 'el-icon-user', text: userName },
+          {
+            icon: 'el-icon-time',
+            text: `发布于 ${formatDateTime(post.created_at)}`
+            // tooltip: `更新于 ${formatPassTime(post.updated_at)}`
+          }
+        ]"
+      >
+        <template #actions>
           <el-button
             type="primary"
             size="small"
@@ -44,8 +50,8 @@
           >
             编辑文章
           </el-button>
-        </div>
-      </div>
+        </template>
+      </PageHeader>
       <div class="q-mt-lg" v-html="post.body_html" />
       <el-backtop />
       <Comment
@@ -69,16 +75,18 @@
 
 <script>
 import { mapState } from 'vuex'
-import http from '../../plugins/http/http'
-import Comment from '../../components/comment'
-import Catalog from '../../components/Catalog'
-import { formatPassTime } from '@/utils/date'
+import http from '../plugins/http/http'
+import Comment from '../components/comment'
+import Catalog from '../components/Catalog'
+import { formatPassTime, formatDateTime } from '@/utils/date'
+import PageHeader from '../components/PageHeader'
 
 export default {
   name: 'Post',
   components: {
     Comment,
-    Catalog
+    Catalog,
+    PageHeader
   },
   filters: {
     timeAgo(d) {
@@ -100,7 +108,7 @@ export default {
       userName: (state) => state.blog.userName
     }),
     currentPath() {
-      return `/blog/posts/?id=${this.$route.query.id}`
+      return `/blog/post/?id=${this.$route.query.id}`
     },
     // 合并主文章和连载文章的目录
     allNavList() {
@@ -147,6 +155,8 @@ export default {
     this.initIntersectionObserver()
   },
   methods: {
+    formatPassTime,
+    formatDateTime,
     getIssue() {
       http
         .get(
@@ -201,7 +211,7 @@ export default {
         })
     },
     chipClickHandler(labelName) {
-      this.$router.push(`/labels/?label=${labelName}`)
+      this.$router.push(`/label/?name=${labelName}`)
     },
     toH1(e) {
       e.preventDefault()

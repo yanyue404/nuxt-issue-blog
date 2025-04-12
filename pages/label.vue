@@ -1,5 +1,11 @@
 <template>
   <div class="markdown-body">
+    <PageHeader
+      :title="label"
+      subtitle="标签下的所有文章"
+      :meta="[{ icon: 'el-icon-collection', text: `共 ${total_count} 篇文章` }]"
+    />
+
     <div v-show="labelList.length === 0">
       <el-skeleton style="width: 100%; padding: 8px 16px 8px 32px" animated>
         <template slot="template">
@@ -32,9 +38,12 @@
 import { mapState, mapMutations, mapActions } from 'vuex'
 import BlogItem from '@/components/BlogItem.vue'
 import reachBottom from '@/mixins/reachBottom'
+import PageHeader from '@/components/PageHeader.vue'
+
 export default {
   components: {
-    BlogItem
+    BlogItem,
+    PageHeader
   },
   data() {
     return {

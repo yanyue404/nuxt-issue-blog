@@ -11,7 +11,8 @@ import {
   Switch,
   Icon,
   Pagination,
-  Input
+  Input,
+  Tooltip
 } from "element-ui";
 import $http from "@/plugins/http/http";
 import "element-ui/lib/theme-chalk/index.css";
@@ -29,6 +30,7 @@ let main = {
     Vue.use(Icon);
     Vue.use(Pagination);
     Vue.use(Input);
+    Vue.use(Tooltip);
     Vue.prototype.$message = Message;
     Vue.prototype.$notify = Notification;
   },
