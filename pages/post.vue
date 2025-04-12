@@ -100,7 +100,12 @@ export default {
       seriesNavList: [],
       activeId: '',
       seriesHeadings: [], // 存储所有连载文章的标题
-      allSeriesChildren: [] // 存储所有连载文章的目录项
+      allSeriesChildren: [], // 存储所有连载文章的目录项
+      observer: null,
+      isScrollingToHash: false,
+      initialHash: '', // 存储初始的 hash
+      scrollAttempts: 0, // 添加尝试次数计数
+      maxScrollAttempts: 10 // 最大尝试次数
     }
   },
   computed: {
@@ -144,15 +149,26 @@ export default {
       // 路由变化时重新获取文章
       this.getIssue()
       this.resetSeriesChildren()
+    },
+    'post.body_html'() {
+      this.$nextTick(() => {
+        this.scrollToHashElement()
+      })
     }
   },
   created() {
-    // this.$q.loading.show({ delay: 250 });
+    // 添加客户端检查
+    if (process.client) {
+      this.initialHash = window.location.hash
+    }
     this.resetSeriesChildren()
     this.getIssue()
   },
   mounted() {
     this.initIntersectionObserver()
+    this.$nextTick(() => {
+      this.scrollToHashElement()
+    })
   },
   methods: {
     formatPassTime,
@@ -202,7 +218,11 @@ export default {
               return `<h${hType} id="${id}">${text}</h${hType}>`
             }
           )
-          // this.$q.loading.hide();
+
+          // 内容处理完成后，尝试滚动到初始 hash 位置
+          this.$nextTick(() => {
+            this.scrollToHashElement(this.initialHash)
+          })
         })
         .catch((err) => {
           if (err.response.status === 404) {
@@ -243,34 +263,54 @@ export default {
           children: this.allSeriesChildren
         })
       }
+
+      // 更新目录后，再次尝试滚动到初始 hash 位置
+      this.$nextTick(() => {
+        this.scrollToHashElement(this.initialHash)
+      })
     },
     initIntersectionObserver() {
-      const observer = new IntersectionObserver(
+      // 确保在客户端执行
+      if (!process.client) return
+
+      if (this.observer) {
+        this.observer.disconnect()
+      }
+
+      this.observer = new IntersectionObserver(
         (entries) => {
           entries.forEach((entry) => {
             if (entry.isIntersecting) {
               this.activeId = entry.target.id
+              // 仅在用户滚动时更新 URL
+              if (!this.isScrollingToHash) {
+                const newUrl = `${this.currentPath}#${entry.target.id}`
+                window.history.replaceState(null, '', newUrl)
+              }
             }
           })
         },
         {
-          threshold: 0.5
+          threshold: 0.5,
+          rootMargin: '-70px 0px -70% 0px'
         }
       )
 
       this.$nextTick(() => {
         document.querySelectorAll('h2, h3').forEach((heading) => {
-          observer.observe(heading)
+          this.observer.observe(heading)
         })
       })
     },
     handleCatalogClick(id) {
       const element = document.getElementById(id)
       if (element) {
-        element.scrollIntoView({ behavior: 'smooth' })
-        // 更新 URL
+        element.scrollIntoView({ behavior: 'smooth', block: 'start' })
+        // 更新 URL，但不触发新的导航
         const newUrl = `${this.currentPath}#${id}`
         window.history.replaceState(null, '', newUrl)
+        // 更新激活的目录项
+        this.activeId = id
       }
     },
     goEditPost() {
@@ -343,6 +383,40 @@ export default {
     // 在路由变化或组件创建时重置集合
     resetSeriesChildren() {
       this.allSeriesChildren = []
+    },
+    scrollToHashElement(hash) {
+      // 确保在客户端执行
+      if (!process.client) return
+
+      const currentHash = hash || window.location.hash
+      if (!currentHash) return
+
+      const id = currentHash.slice(1)
+      const element = document.getElementById(id)
+
+      if (element) {
+        this.isScrollingToHash = true
+        setTimeout(() => {
+          element.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start'
+          })
+          this.activeId = id
+          this.isScrollingToHash = false
+          this.scrollAttempts = 0
+        }, 100)
+      } else if (this.scrollAttempts < this.maxScrollAttempts) {
+        this.scrollAttempts++
+        setTimeout(() => {
+          this.scrollToHashElement(currentHash)
+        }, 200)
+      }
+    }
+  },
+  beforeDestroy() {
+    // 清理 observer
+    if (this.observer) {
+      this.observer.disconnect()
     }
   }
 }
