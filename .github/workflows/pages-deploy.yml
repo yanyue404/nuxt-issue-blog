@@ -1,13 +1,11 @@
-# https://www.ruanyifeng.com/blog/2016/07/yaml.html
-# 手动触发
 name: Build and Deploy
 on:
   push:
     branches:
       - master
-  # 定时任务在utc的9点执行，换算北京时间需要 + 8也就是凌晨五点
   schedule:
-    - cron: "0 21 * * *"
+    - cron: "0 21 * * *" # UTC 21:00 (北京时间 05:00)
+
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
@@ -23,24 +21,42 @@ jobs:
           fetch-depth: 0
         env:
           TZ: Asia/Shanghai
-      - name: Use Node.js 12.18.3
+
+      - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '12.18.3'
-      - name: npm Install
+          node-version: "12.18.3"
+
+      - name: Get Config
+        id: config
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const config = require('./blog.config.js')
+            core.setOutput('userName', config.userName)
+            core.setOutput('userEmail', config.userEmail)
+            core.setOutput('baseUrl', config.baseUrl)
+            core.setOutput('repository', config.repository)
+
+      - name: Install Dependencies
         run: npm install
+
       - name: Build Nuxt Pages
         run: npm run generate
+
       - name: Deploy to Pages
         env:
           TZ: Asia/Shanghai
+          USER_NAME: ${{ steps.config.outputs.userName }}
+          USER_EMAIL: ${{ steps.config.outputs.userEmail }}
+          BASE_URL: ${{ steps.config.outputs.baseUrl }}
+          REPO: ${{ steps.config.outputs.repository }}
         run: |
           cd dist
           git init
-          git config user.name "yanyue404"
-          git config user.email "1656800216@qq.com"
+          git config user.name "$USER_NAME"
+          git config user.email "$USER_EMAIL"
           git add .
           git commit -m 'Deploying to gh-pages from Github actions'
-
-          git push -f https://ACCESS_TOKEN:${{secrets.ACCESS_TOKEN }}@github.com/yanyue404/blog.git master:gh-pages
+          git push -f https://ACCESS_TOKEN:${{secrets.ACCESS_TOKEN }}@github.com/$USER_NAME/$REPO.git master:gh-pages
           cd -

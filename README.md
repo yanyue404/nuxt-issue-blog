@@ -1,75 +1,108 @@
-# Nuxt Issue Blog
+<div align="center">
+  <h1>Nuxt Issue Blog</h1>
+  <p>🚀 A static blog generator powered by GitHub Issues and Nuxt.js</p>
+  
+  [English](./README.md) | [简体中文](./README.zh-CN.md)
+  
+  <p align="center">
+    <img src="./assets/light.jpg" width="49%" alt="Light Theme">
+    <img src="./assets/dark.jpg" width="49%" alt="Dark Theme">
+  </p>
+</div>
 
-基于 [GitHub API](https://docs.github.com/en/rest/issues/issues) 的博客静态站点生成工具，尽情享受用 GitHub Issue 写博客带来的便利吧！
+## ✨ Features
 
-## Features
+- 📦 SSG for fast deployment and SEO
+- 🌙 Light/Dark theme support
+- 💬 GitHub Issues as CMS
+- 🔄 Auto-deploy with GitHub Actions
+- 📱 Mobile-friendly responsive design
+- 🎨 Clean and minimal UI
+- 🔍 Full-text search support
+- 📝 Markdown with code highlighting
+- 🏷️ Label-based categorization
+- 📊 Table of contents navigation
 
-- 采用 ssg 静态站点，快速部署上线
-- 支持首屏服务端渲染
-- 支持 github 账号评论
-- 支持暗黑主题
-- github action 自动部署
-- markdown 博客文章标题导航栏
+## 🚀 Quick Start
 
-## TODO
+### Prerequisites
 
-- markdown 博客文章在线编辑功能
-
-## Demo
-
-https://yanyue404.github.io/blog
-
-![](./assets/light.jpg)
-
-![](./assets/dark.jpg)
-
-## Usage
-
-### 准备工作
-
-#### 开发环境依赖
-
-```
+```bash
 - git: ^v2.0.0
 - node: ^v12.18.3
 - yarn: ^v1.12.0
 ```
 
-#### 获取 GitHub Token
+### Setup GitHub Token
 
-点击 [这里](https://github.com/settings/tokens/new)，勾选以下两项：
+1. Go to [GitHub Token Settings](https://github.com/settings/tokens/new)
+2. Select these permissions:
 
 ```
 read: user        Read all user profile data
 user: email       Access user email addresses (read-only)
 ```
 
-⚠️ 警告️：别的不要勾选，以免造成账号安全问题。
-
-如果你的项目是属于一个组织的，还需要勾选一个权限：
+3. For organization projects, also select:
 
 ```
 read: org         Read org and team membership
 ```
 
-#### GitHub Token 进行 Base64 加密
+⚠️ Warning: Don't select other permissions for security reasons.
 
-打开 Chrome 的 Console，运行：
+### Configuration
 
+1. Fork this repository
+2. Clone to your local machine
+3. Edit `blog.config.js`:
+
+```js
+module.exports = {
+  baseUrl: '/blog/',
+  userName: 'your-username',
+  userEmail: 'your-email',
+  repository: 'blog',
+  accessToken: 'base64-encoded-token',
+  blogName: 'Your Blog Name',
+  seo: {
+    title: 'Your Blog Title',
+    description: 'Your Blog Description',
+    keywords: 'your, keywords'
+  }
+}
 ```
-window.btoa('{你的 GitHub Token}')
+
+### Development
+
+```bash
+# Install dependencies
+yarn install
+
+# Start development server
+yarn serve
+
+# Build for production
+yarn build
+
+# Deploy to GitHub Pages
+yarn deploy
 ```
 
-如果你把 Token 直接明文推到 GitHub 仓库中，此 Token 就会立马失效，所以需要加密混淆。
+## 🤝 Contributing
 
-### 开始部署
+1. Fork it
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'feat: add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Create a new Pull Request
 
-1. Fork 此项目到自己仓库；
-2. 将代码克隆到本地；
-3. 编辑 `blog.config.js` 文件；
-4. 安装依赖：`yarn install`；
-5. 访问 Github 接口你可能需要能访问外网的终端代理：`export https_proxy=http://127.0.0.1:8899 http_proxy=http://127.0.0.1:8899`
-6. 查看效果： `yarn serve`， 本地预览 `localhost:9527`;
-7. 打包：`yarn dev|build`；
-8. 部署：`yarn deploy`；
-9. 浏览器地址栏输入：`{你的用户名}.github.io/blog` 查看。
+## 📝 License
+
+[MIT](./LICENSE)
+
+## 🙏 Acknowledgments
+
+- [Nuxt.js](https://nuxtjs.org/)
+- [GitHub API](https://docs.github.com/en/rest)
+- [Element UI](https://element.eleme.io/)
