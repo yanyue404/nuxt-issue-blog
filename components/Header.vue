@@ -19,6 +19,7 @@
         </span>
         <span class="github-text">Star</span>
       </a>
+      <LangSwitch />
       <DarkMode v-model="dark"></DarkMode>
     </div>
   </header>
@@ -28,11 +29,13 @@
 import { mapState } from 'vuex'
 import { isServer } from '@/utils'
 import DarkMode from '@/components/darkMode.vue'
+import LangSwitch from '@/components/LangSwitch.vue'
 
 export default {
   name: 'Header',
   components: {
-    DarkMode
+    DarkMode,
+    LangSwitch
   },
   data() {
     return {

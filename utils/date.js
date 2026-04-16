@@ -111,7 +111,7 @@ export function dateFormat(fmt, date) {
  * @param  {Date} startTime
  * @return {String}
  */
-export function formatPassTime(dateTime) {
+export function formatPassTime(dateTime, t) {
   if (!dateTime) return ''
 
   const now = new Date().getTime()
@@ -124,19 +124,21 @@ export function formatPassTime(dateTime) {
   const month = day * 30
   const year = month * 12
 
-  if (passTime < minute) {
-    return '刚刚'
-  } else if (passTime < hour) {
-    return Math.floor(passTime / minute) + '分钟前'
-  } else if (passTime < day) {
-    return Math.floor(passTime / hour) + '小时前'
-  } else if (passTime < month) {
-    return Math.floor(passTime / day) + '天前'
-  } else if (passTime < year) {
-    return Math.floor(passTime / month) + '个月前'
-  } else {
+  if (!t) {
+    if (passTime < minute) return '刚刚'
+    if (passTime < hour) return Math.floor(passTime / minute) + '分钟前'
+    if (passTime < day) return Math.floor(passTime / hour) + '小时前'
+    if (passTime < month) return Math.floor(passTime / day) + '天前'
+    if (passTime < year) return Math.floor(passTime / month) + '个月前'
     return Math.floor(passTime / year) + '年前'
   }
+
+  if (passTime < minute) return t('time.justNow')
+  if (passTime < hour) return t('time.minutesAgo', { n: Math.floor(passTime / minute) })
+  if (passTime < day) return t('time.hoursAgo', { n: Math.floor(passTime / hour) })
+  if (passTime < month) return t('time.daysAgo', { n: Math.floor(passTime / day) })
+  if (passTime < year) return t('time.monthsAgo', { n: Math.floor(passTime / month) })
+  return t('time.yearsAgo', { n: Math.floor(passTime / year) })
 }
 
 export function formatDateTime(dateTime, showHour = false) {

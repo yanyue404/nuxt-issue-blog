@@ -2,9 +2,9 @@
   <footer class="footer">
     <div class="footer-content">
       <div class="project-info">
-        <h3>🚀 想要搭建自己的博客？</h3>
+        <h3>🚀 {{ $t('footer.wantBlog') }}</h3>
         <p>
-          本博客基于
+          {{ $t('footer.builtWith') }}
           <a
             href="https://github.com/yanyue404/nuxt-issue-blog"
             target="_blank"
@@ -12,17 +12,16 @@
           >
             Nuxt Issue Blog
           </a>
-          构建
+          {{ $t('footer.build') }}
         </p>
         <p class="description">
-          一个基于 GitHub API 的博客静态站点生成工具，让你享受用 GitHub Issue
-          写博客的便利！
+          {{ $t('footer.description') }}
         </p>
         <div class="features">
-          <span>✨ SSG静态站点</span>
-          <span>🌙 暗黑主题</span>
-          <span>💬 GitHub评论</span>
-          <span>🔄 自动部署</span>
+          <span>✨ {{ $t('footer.featureSSG') }}</span>
+          <span>🌙 {{ $t('footer.featureDark') }}</span>
+          <span>💬 {{ $t('footer.featureComment') }}</span>
+          <span>🔄 {{ $t('footer.featureDeploy') }}</span>
         </div>
       </div>
       <div class="github-stats">
@@ -33,7 +32,7 @@
           class="github-button"
         >
           <i class="el-icon-star-on"></i>
-          Star on GitHub
+          {{ $t('footer.starOnGithub') }}
         </a>
       </div>
     </div>

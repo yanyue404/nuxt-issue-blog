@@ -2,7 +2,7 @@
   <div class="comment-container">
     <!-- 作者连载区域 -->
     <div v-if="hasAuthorComments" class="series-container">
-      <h2>文章连载（{{ authorComments.length }} 篇）</h2>
+      <h2>{{ $t('comment.seriesCount', { count: authorComments.length }) }}</h2>
       <div
         v-for="comment in authorComments"
         :key="comment.id"
@@ -14,7 +14,7 @@
               <img alt="avatar" :src="comment.user.avatar_url" />
             </div>
             <span class="username">{{ comment.user.login }}</span>
-            <span class="time">{{ comment.updated_at | timeAgo }}</span>
+            <span class="time">{{ timeAgo(comment.updated_at) }}</span>
           </div>
           <el-button
             type="primary"
@@ -22,7 +22,7 @@
             icon="el-icon-edit"
             @click="goEditComment(comment.id)"
           >
-            编辑文章
+            {{ $t('comment.editPost') }}
           </el-button>
         </div>
         <div
@@ -34,7 +34,7 @@
 
     <!-- 访客留言区域 -->
     <div class="comments-container">
-      <h2>留言（{{ visitorComments.length }} 条）</h2>
+      <h2>{{ $t('comment.commentsCount', { count: visitorComments.length }) }}</h2>
       <div
         v-for="comment in visitorComments"
         :key="comment.id"
@@ -45,7 +45,7 @@
             <img alt="avatar" :src="comment.user.avatar_url" />
           </div>
           <span class="username">{{ comment.user.login }}</span>
-          <span class="time">{{ comment.updated_at | timeAgo }}</span>
+          <span class="time">{{ timeAgo(comment.updated_at) }}</span>
         </div>
         <div class="comment-content" v-html="comment.body_html"></div>
       </div>
@@ -55,7 +55,7 @@
     <div class="comment-action">
       <el-button type="primary" @click="goAddComment">
         <i class="el-icon-plus"></i>
-        添加留言
+        {{ $t('comment.addComment') }}
       </el-button>
     </div>
   </div>
@@ -64,17 +64,13 @@
 <script>
 import http from '../plugins/http/http'
 import { formatPassTime } from '@/utils/date'
+import { SERIES_KEY } from '@/utils/constants'
 import Catalog from './Catalog.vue'
 
 export default {
   name: 'Comment',
   components: {
     Catalog
-  },
-  filters: {
-    timeAgo(d) {
-      return formatPassTime(new Date(d))
-    }
   },
   data() {
     return {
@@ -114,6 +110,9 @@ export default {
     this.getComments()
   },
   methods: {
+    timeAgo(d) {
+      return formatPassTime(new Date(d), this.$t.bind(this))
+    },
     processSeriesContent(content, commentId) {
       if (!content) return ''
 
@@ -163,8 +162,8 @@ export default {
       if (seriesHeadings.length > 0) {
         this.$nextTick(() => {
           const seriesNav = {
-            text: '连载文章',
-            children: organizedHeadings // 使用组织好的标题结构
+            text: SERIES_KEY,
+            children: organizedHeadings
           }
 
           this.$emit('series-content-updated', seriesNav)

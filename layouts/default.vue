@@ -7,7 +7,19 @@
 
 <script>
 export default {
-  name: 'DefaultLayout'
+  name: 'DefaultLayout',
+  head() {
+    return {
+      htmlAttrs: {
+        lang: this.$i18n.locale === 'zh-CN' ? 'zh' : 'en'
+      },
+      title: this.$t('seo.title'),
+      meta: [
+        { hid: 'description', name: 'description', content: this.$t('seo.description') },
+        { hid: 'keywords', name: 'keywords', content: this.$t('seo.keywords') }
+      ]
+    }
+  }
 }
 </script>
 

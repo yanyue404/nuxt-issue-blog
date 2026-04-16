@@ -2,8 +2,13 @@
   <div class="markdown-body">
     <PageHeader
       :title="label"
-      subtitle="标签下的所有文章"
-      :meta="[{ icon: 'el-icon-collection', text: `共 ${total_count} 篇文章` }]"
+      :subtitle="$t('label.allPosts')"
+      :meta="[
+        {
+          icon: 'el-icon-collection',
+          text: $t('label.totalPosts', { count: total_count })
+        }
+      ]"
     />
 
     <div v-show="labelList.length === 0">

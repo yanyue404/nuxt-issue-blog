@@ -53,6 +53,10 @@ export default {
     {
       src: '~/plugins/entry-plugin/main.js',
       ssr: true
+    },
+    {
+      src: '~/plugins/i18n.js',
+      ssr: true
     }
   ],
 

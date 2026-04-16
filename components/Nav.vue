@@ -13,7 +13,7 @@
     <div style="margin-bottom: 1.5rem; flex: 0.9">
       <el-input
         v-model="keyWorldVal"
-        placeholder="搜索文章标题/关键字"
+        :placeholder="$t('nav.searchPlaceholder')"
         :clearable="true"
       ></el-input>
     </div>

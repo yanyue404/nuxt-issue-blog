@@ -20,6 +20,7 @@
     "lodash": "^4.17.19",
     "nuxt": "^2.11.0",
     "qs": "^6.9.6",
+    "vue-i18n": "^8.28.2",
     "vuex-persistedstate": "^2.7.0"
   },
   "devDependencies": {

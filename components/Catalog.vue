@@ -1,7 +1,7 @@
 <template>
   <nav class="article-catalog catalog-block">
     <div class="catalog-title">
-      <div>{{ title }}</div>
+      <div>{{ title || $t('catalog.title') }}</div>
     </div>
     <div class="catalog-body unfold">
       <ul class="catalog-list" style="margin-top: 0px">
@@ -50,7 +50,7 @@
         <!-- 连载文章目录 -->
         <li v-if="seriesNavList && seriesNavList.length" class="item d2">
           <div class="a-container">
-            <a class="catalog-aTag d2-aTag-title">连载文章</a>
+            <a class="catalog-aTag d2-aTag-title">{{ $t('catalog.seriesArticles') }}</a>
           </div>
           <ul class="sub-list">
             <template v-for="(h2Item, index) in seriesNavList">
@@ -101,12 +101,14 @@
 </template>
 
 <script>
+import { SERIES_KEY } from '@/utils/constants'
+
 export default {
   name: 'Catalog',
   props: {
     title: {
       type: String,
-      default: '目录'
+      default: ''
     },
     navList: {
       type: Array,
@@ -124,10 +126,10 @@ export default {
   computed: {
     // 分离普通目录和连载文章目录
     normalNavList() {
-      return this.navList.filter((item) => item.text !== '连载文章')
+      return this.navList.filter((item) => item.text !== SERIES_KEY)
     },
     seriesNavList() {
-      const seriesItem = this.navList.find((item) => item.text === '连载文章')
+      const seriesItem = this.navList.find((item) => item.text === SERIES_KEY)
       return seriesItem ? seriesItem.children : []
     }
   },

@@ -35,8 +35,9 @@
           { icon: 'el-icon-user', text: userName },
           {
             icon: 'el-icon-time',
-            text: `发布于 ${formatDateTime(post.created_at)}`
-            // tooltip: `更新于 ${formatPassTime(post.updated_at)}`
+            text: $t('post.publishedAt', {
+              date: formatDateTime(post.created_at)
+            })
           }
         ]"
       >
@@ -48,7 +49,7 @@
             class="edit-button"
             @click="goEditPost"
           >
-            编辑文章
+            {{ $t('post.editPost') }}
           </el-button>
         </template>
       </PageHeader>
@@ -78,8 +79,9 @@ import { mapState } from 'vuex'
 import http from '../plugins/http/http'
 import Comment from '../components/comment'
 import Catalog from '../components/Catalog'
-import { formatPassTime, formatDateTime } from '@/utils/date'
 import PageHeader from '../components/PageHeader'
+import { formatPassTime, formatDateTime } from '@/utils/date'
+import { SERIES_KEY } from '@/utils/constants'
 
 export default {
   name: 'Post',
@@ -87,11 +89,6 @@ export default {
     Comment,
     Catalog,
     PageHeader
-  },
-  filters: {
-    timeAgo(d) {
-      return d && formatPassTime(new Date(d))
-    }
   },
   data() {
     return {
@@ -133,7 +130,7 @@ export default {
         mainNavList.push({
           id: 'series-title',
           type: 'H2',
-          text: '连载文章',
+          text: SERIES_KEY,
           children: this.seriesNavList.map((item) => ({
             ...item,
             type: 'H3'
@@ -157,9 +154,8 @@ export default {
     }
   },
   created() {
-    // 添加客户端检查
     if (process.client) {
-      this.initialHash = window.location.hash
+      this.initialHash = window.location.hash // eslint-disable-line nuxt/no-globals-in-created
     }
     this.resetSeriesChildren()
     this.getIssue()
@@ -169,6 +165,12 @@ export default {
     this.$nextTick(() => {
       this.scrollToHashElement()
     })
+  },
+  beforeDestroy() {
+    // 清理 observer
+    if (this.observer) {
+      this.observer.disconnect()
+    }
   },
   methods: {
     formatPassTime,
@@ -203,7 +205,7 @@ export default {
                   // 如果没有父级 h2,创建一个默认分组
                   h2Index++
                   this.navList.push({
-                    text: '未分组',
+                    text: this.$t('post.ungrouped'),
                     id: `default-h2-${h2Index}`,
                     type: 'H2',
                     children: []
@@ -250,7 +252,7 @@ export default {
 
       // 找到现有的连载文章目录项或创建新的
       const existingSeriesIndex = this.navList.findIndex(
-        (item) => item.text === '连载文章'
+        (item) => item.text === SERIES_KEY
       )
 
       if (existingSeriesIndex >= 0) {
@@ -259,7 +261,7 @@ export default {
       } else {
         // 添加新的连载文章目录，使用完整的集合
         this.navList.push({
-          text: '连载文章',
+          text: SERIES_KEY,
           children: this.allSeriesChildren
         })
       }
@@ -364,7 +366,7 @@ export default {
       if (this.seriesHeadings.length > 0) {
         this.$nextTick(() => {
           const seriesNav = {
-            text: '连载文章',
+            text: SERIES_KEY,
             children: this.seriesHeadings
           }
           this.handleSeriesContentUpdated(seriesNav)
@@ -411,12 +413,6 @@ export default {
           this.scrollToHashElement(currentHash)
         }, 200)
       }
-    }
-  },
-  beforeDestroy() {
-    // 清理 observer
-    if (this.observer) {
-      this.observer.disconnect()
     }
   }
 }
