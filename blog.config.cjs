@@ -1,4 +1,4 @@
-export default {
+module.exports = {
   baseUrl: '/blog/',
   userName: 'yanyue404', // GitHub 用户名
   userEmail: '1656800216@qq.com', // GitHub 用户邮箱

@@ -32,7 +32,7 @@ jobs:
         uses: actions/github-script@v6
         with:
           script: |
-            const config = require('./blog.config.js')
+            const config = require('./blog.config.cjs')
             core.setOutput('userName', config.userName)
             core.setOutput('userEmail', config.userEmail)
             core.setOutput('baseUrl', config.baseUrl)

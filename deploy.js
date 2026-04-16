@@ -1,5 +1,5 @@
 const { exec, cd, echo } = require('shelljs')
-const blogConfig = require('./blog.config')
+const blogConfig = require('./blog.config.cjs')
 /*
  自动发布 blog 站点
 */

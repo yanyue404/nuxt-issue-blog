@@ -2,7 +2,7 @@
 
 # 从 blog.config.js 读取配置
 CONFIG=$(node -e "
-const config = require('./blog.config.js');
+const config = require('./blog.config.cjs');
 console.log(JSON.stringify({
     userName: config.userName,
     repository: config.repository,
