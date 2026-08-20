@@ -47,6 +47,7 @@ jobs:
       - name: Build Nuxt Pages
         env:
           GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN }}
+          PATH_TYPE: production
         run: npm run generate
 
       - name: Deploy to Pages

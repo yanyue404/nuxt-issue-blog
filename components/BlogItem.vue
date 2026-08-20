@@ -58,6 +58,7 @@
 
 <script>
 import { dateFormat } from '@/utils/date'
+import { isStaticClient } from '@/utils/github'
 export default {
   name: 'Item',
   filters: {
@@ -93,7 +94,15 @@ export default {
   },
   methods: {
     toPostDetail(id) {
-      this.$router.push(`/post/${id}`)
+      const path = `/post/${id}`
+      if (isStaticClient()) {
+        let target = this.$router.resolve(path).href
+        if (target.slice(-1) !== '/') target += '/'
+        console.log('[BlogItem] open generated post', target)
+        window.location.href = target
+        return
+      }
+      this.$router.push(path)
     },
     chipClickHandler(labelName) {
       this.$router.push(`/label/${encodeURIComponent(labelName)}`)

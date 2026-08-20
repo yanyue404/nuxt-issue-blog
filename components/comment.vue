@@ -66,6 +66,7 @@ import http from '../plugins/http/http'
 import { formatPassTime } from '@/utils/date'
 import { SERIES_KEY } from '@/utils/constants'
 import Catalog from './Catalog.vue'
+import { isStaticClient } from '@/utils/github'
 
 export default {
   name: 'Comment',
@@ -112,6 +113,10 @@ export default {
     }
   },
   created() {
+    if (isStaticClient()) {
+      console.warn('[comment] skip github comments on static host')
+      return
+    }
     this.getComments()
   },
   methods: {

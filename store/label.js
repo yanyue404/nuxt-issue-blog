@@ -1,5 +1,10 @@
 import http from '../plugins/http/http'
-import { ISSUE_PAGE_SIZE, isPullRequest, mapIssueToPost } from '@/utils/github'
+import {
+  ISSUE_PAGE_SIZE,
+  isPullRequest,
+  isStaticClient,
+  mapIssueToPost
+} from '@/utils/github'
 
 export const state = () => ({
   labelList: [],
@@ -29,15 +34,31 @@ export const mutations = {
 
 export const actions = {
   async getIssueListByLabel(
-    { commit, rootGetters },
+    { commit, dispatch, rootGetters },
     { page = 1, label = '', number = ISSUE_PAGE_SIZE } = {}
   ) {
-    const q = `repo:${rootGetters['blog/repository']} label:"${label}" is:issue state:open`
-    const url = `/search/issues?q=${encodeURIComponent(
-      q
-    )}&sort=created&order=desc&page=${page}&per_page=${number}`
     commit('setPending', true)
     try {
+      if (isStaticClient()) {
+        const all = await dispatch('blog/ensureStaticPosts', null, {
+          root: true
+        })
+        const filtered = (all || []).filter((post) =>
+          (post.labels || []).some((item) => item.name === label)
+        )
+        const start = (page - 1) * number
+        commit('updateLabelList', {
+          page,
+          posts: filtered.slice(start, start + number),
+          total_count: filtered.length
+        })
+        return
+      }
+
+      const q = `repo:${rootGetters['blog/repository']} label:"${label}" is:issue state:open`
+      const url = `/search/issues?q=${encodeURIComponent(
+        q
+      )}&sort=created&order=desc&page=${page}&per_page=${number}`
       const res = await http.get(url)
       const posts = (res.data.items || [])
         .filter((item) => !isPullRequest(item))

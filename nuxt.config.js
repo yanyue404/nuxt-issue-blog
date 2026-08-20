@@ -1,5 +1,6 @@
 import blogConfig from './blog.config'
 const path = require('path')
+const { mapIssue, writePostsJson } = require('./utils/posts-snapshot.cjs')
 
 if (!process.env.GITHUB_TOKEN) {
   try {
@@ -174,6 +175,7 @@ export default {
       let page = 1
       const routes = []
       const labels = new Set()
+      const posts = []
       while (page <= 20) {
         const res = await axios.get(
           `https://api.github.com/repos/${config.userName}/${config.repository}/issues`,
@@ -191,6 +193,7 @@ export default {
         const issues = (res.data || []).filter((item) => !item.pull_request)
         if (!issues.length) break
         issues.forEach((issue) => {
+          posts.push(mapIssue(issue))
           routes.push('/post/' + issue.number)
           ;(issue.labels || []).forEach((label) => {
             if (label.name) labels.add(label.name)
@@ -202,6 +205,7 @@ export default {
       labels.forEach((name) => {
         routes.push('/label/' + encodeURIComponent(name))
       })
+      writePostsJson(posts)
       console.log('[generate] pre-render routes', routes.length)
       return routes
     }

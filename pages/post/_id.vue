@@ -82,7 +82,7 @@ import Catalog from '@/components/Catalog'
 import PageHeader from '@/components/PageHeader'
 import { formatPassTime, formatDateTime } from '@/utils/date'
 import { SERIES_KEY } from '@/utils/constants'
-import { decorateIssueHtml, getPostIdFromRoute } from '@/utils/github'
+import { decorateIssueHtml, getPostIdFromRoute, isStaticClient } from '@/utils/github'
 
 export default {
   name: 'Post',
@@ -93,6 +93,10 @@ export default {
   },
   async asyncData({ params, store, app, error }) {
     const id = params.id
+    if (isStaticClient()) {
+      console.warn('[post] skip github fetch on static host', id)
+      return
+    }
     try {
       const res = await http.get(
         `/repos/${store.getters['blog/repository']}/issues/${id}`
@@ -114,7 +118,14 @@ export default {
     } catch (err) {
       console.error('[post] fetch issue failed', id, err && err.message)
       const status = err.response && err.response.status
-      return error({ statusCode: status || 404, message: 'Post not found' })
+      if (status === 403 || status === 429) {
+        console.warn('[post] rate limited, keep generated payload', id)
+        return
+      }
+      if (status === 404) {
+        return error({ statusCode: 404, message: 'Post not found' })
+      }
+      return
     }
   },
   data() {
@@ -205,9 +216,24 @@ export default {
       this.initialHash = window.location.hash // eslint-disable-line nuxt/no-globals-in-created
     }
     this.resetSeriesChildren()
-    if (!(this.post && this.post.id)) {
-      this.getIssue()
+    if (this.post && this.post.id) {
+      return
     }
+    if (isStaticClient()) {
+      let target = this.$router.resolve(`/post/${this.postId}`).href
+      if (target.slice(-1) !== '/') target += '/'
+      console.warn('[post] hard navigate to generated html', target)
+      if (typeof window !== 'undefined' && target) {
+        const here = window.location.pathname
+        if (here.replace(/\/$/, '') + '/' === target.replace(/\/$/, '') + '/') {
+          console.warn('[post] already on generated path, skip reload loop')
+          return
+        }
+        window.location.replace(target)
+      }
+      return
+    }
+    this.getIssue()
   },
   mounted() {
     this.initIntersectionObserver()

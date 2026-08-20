@@ -1,7 +1,12 @@
 import blogConfig from '../blog.config'
 import http from '../plugins/http/http'
 import { isServer } from '@/utils'
-import { ISSUE_PAGE_SIZE, isPullRequest, mapIssueToPost } from '@/utils/github'
+import {
+  ISSUE_PAGE_SIZE,
+  isPullRequest,
+  isStaticClient,
+  mapIssueToPost
+} from '@/utils/github'
 
 const publicBlogConfig = Object.assign({}, blogConfig)
 delete publicBlogConfig.accessToken
@@ -10,6 +15,7 @@ export const state = () => ({
   ...publicBlogConfig,
   serverLoaded: false,
   postList: [],
+  allPosts: [],
   page: 0,
   total_count: 0,
   pending: false,
@@ -34,6 +40,9 @@ export const mutations = {
     state.postList = [...data.posts]
     state.total_count = data.total_count
   },
+  setAllPosts(state, posts) {
+    state.allPosts = posts || []
+  },
   setPending(state, val) {
     state.pending = val
   },
@@ -45,15 +54,57 @@ export const mutations = {
   }
 }
 
+function paginate(posts, page, number) {
+  const start = (page - 1) * number
+  return posts.slice(start, start + number)
+}
+
+function filterByKey(posts, key) {
+  const q = (key || '').trim().toLowerCase()
+  if (!q) return posts
+  return posts.filter((post) => {
+    const title = (post.title || '').toLowerCase()
+    const body = (post.body_html || '').toLowerCase()
+    return title.includes(q) || body.includes(q)
+  })
+}
+
 export const actions = {
+  async ensureStaticPosts({ state, commit }) {
+    if (state.allPosts && state.allPosts.length) {
+      return state.allPosts
+    }
+    const url = `${state.baseUrl || '/blog/'}data/posts.json`
+    console.log('[blog] load static posts', url)
+    const res = await fetch(url)
+    if (!res.ok) {
+      throw new Error('static posts ' + res.status)
+    }
+    const data = await res.json()
+    const posts = data.posts || []
+    commit('setAllPosts', posts)
+    return posts
+  },
+
   async getIssueList(
-    { commit, state, getters },
+    { commit, dispatch, state, getters },
     { page = 1, number = ISSUE_PAGE_SIZE, keyWorld = '' } = {}
   ) {
     const key = keyWorld || state.keyWorld
     commit('setPending', true)
 
     try {
+      if (isStaticClient()) {
+        const all = await dispatch('ensureStaticPosts')
+        const filtered = filterByKey(all, key)
+        commit('updatePostList', {
+          page,
+          posts: paginate(filtered, page, number),
+          total_count: filtered.length
+        })
+        return
+      }
+
       if (key) {
         const q = `${key} repo:${getters.repository} is:issue state:open`
         const url = `/search/issues?q=${encodeURIComponent(

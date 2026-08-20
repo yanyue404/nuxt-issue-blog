@@ -2,6 +2,15 @@ import { displayCodeText } from '@/utils'
 
 export const ISSUE_PAGE_SIZE = 25
 
+export function isStaticClient() {
+  if (!process.client) return false
+  if (process.env.PATH_TYPE === 'production') return true
+  if (typeof window !== 'undefined' && /github\.io$/i.test(window.location.hostname)) {
+    return true
+  }
+  return false
+}
+
 export function mapIssueToPost(item) {
   if (!item) return null
   return {

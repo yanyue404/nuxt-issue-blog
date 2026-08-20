@@ -37,7 +37,8 @@
 | Token 不进前端包 | `blog.config.js` 不再导出 `accessToken`；仅服务端读 `GITHUB_TOKEN` / `blog.config.cjs` | `blog.config.js`、`plugins/http/http.js`、`nuxt.config.js` |
 | HTTP 错误不再被吞掉 | 拦截器 `Promise.reject`，请求失败打日志 | `plugins/http/http.js`、`store/blog.js`、`store/label.js` |
 | 构建可手动 / 被内容仓库触发 | `workflow_dispatch` + `repository_dispatch: blog-content-updated` | `.github/workflows/pages-deploy.yml` |
-| 本地开发避免 403 | 浏览器请求同源 `/repos`、`/search`、`/users`，Nuxt 代理带 Token 转发 GitHub | `plugins/http/http.js`、`nuxt.config.js` |
+| 线上不再直连 GitHub API | 生产环境读 `dist/data/posts.json`；点文章整页打开静态 HTML，403 不再覆盖成 Post not found | `store/blog.js`、`pages/post/_id.vue`、`utils/posts-snapshot.cjs` |
+| 禁用 Jekyll | `static/.nojekyll`，避免 GitHub Pages 处理静态文件时踩坑 | `static/.nojekyll` |
 
 本地开发时，Network 里应看到：
 
@@ -67,8 +68,17 @@ http://localhost:9527/repos/yanyue404/blog/issues/309
 ### 构建与部署注意
 
 - generate 时用环境变量 `GITHUB_TOKEN`（CI 里来自 `secrets.ACCESS_TOKEN`），避免 287 篇文章预渲染撞未认证限额。
+- CI `PATH_TYPE=production`，客户端走静态 `posts.json`，不要打 `api.github.com`。
 - `generate.concurrency: 2`、`interval: 50`，降低预渲染打 GitHub 的并发。
 - 内容仓库发 Issue 后要重建站点：把 `.github/workflows/trigger-blog-rebuild.yml` **放到 `yanyue404/blog`**（不要只放在本仓库）。该仓库需配置能对本仓库发 `repository_dispatch` 的 `ACCESS_TOKEN`。
+
+### 线上 403 /「刷新带 hash 才正常」说明
+
+这不是 hash 路由和文章路由不一致。
+
+1. 列表点进 `/blog/post/294` 是 **Vue SPA 跳转**，页面还是首页那份 JS，会再请求 `api.github.com`。未认证限额 60 次/小时用尽就 **403**，`asyncData` 曾把 403 当成 404，于是出现 Post not found。静态文件其实一直在 [gh-pages/post/294](https://github.com/yanyue404/blog/tree/gh-pages/post/294)。
+2. 地址栏刷新（你加了 `#main-heading-H2-0`）是 **整页加载** `post/294/index.html`，用的是 generate 好的正文，不再依赖 GitHub API，所以能打开。
+3. `/?page=4` 以前同样在浏览器里请求 GitHub 第 4 页，403 后列表不会变。现在分页切 `posts.json` 本地切片。
 
 ---
 
@@ -79,7 +89,7 @@ http://localhost:9527/repos/yanyue404/blog/issues/309
 ### P0 收尾（运营）
 
 - [ ] 将 `trigger-blog-rebuild.yml` 安装到内容仓库 [yanyue404/blog](https://github.com/yanyue404/blog)，确认新建/编辑 Issue 能触发本仓库 Pages 部署。
-- [ ] 生产环境 GitHub Pages **没有 Node 代理**，浏览器仍可能直连 `api.github.com`（未认证 60 次/小时）。Cloudflare WARP / 共享出口 IP 会再次 403。可选方案：Cloudflare Worker / 其它同源反代带 Token，或接受「静态 HTML 兜底 + 客户端刷新失败时保留 generate 快照」。
+- [x] 生产环境不再让浏览器直连 GitHub API（已改为 `posts.json` + 静态 HTML）。留言仍跳转 GitHub，不在页面内拉取 comments。
 
 ### P2 工程健康度
 
@@ -99,9 +109,9 @@ http://localhost:9527/repos/yanyue404/blog/issues/309
 
 ### 已知限制（当前设计如此，不是漏做）
 
-- 纯静态托管下，**无 JS 用户**看到的是上次 generate 的快照；有 JS 时首页会再拉一遍最新列表。
-- 搜索完整结果依赖 GitHub Search API，有索引延迟和频率限制；当前页过滤只覆盖已加载的那一页。
-- List Issues API 会带上 Pull Request，代码里已过滤 `pull_request`；本仓库目前 PR 为 0。
+- 纯静态托管下，列表/分页/搜索来自上次 generate 写入的 `/blog/data/posts.json`，新鲜度和部署同步。
+- 文章正文以预渲染 HTML 为准；从列表进入会整页打开静态文件，而不是 SPA 再打 GitHub。
+- 线上文章页暂时不请求 GitHub comments（避免 403）；可通过「添加留言」到 Issue。
 
 ---
 
@@ -112,4 +122,5 @@ http://localhost:9527/repos/yanyue404/blog/issues/309
 3. `/blog/post/?id=309` 跳转到 `/blog/post/309`。
 4. 点标签进入 `/blog/label/...`，底部分页与首页一致。
 5. 搜索框输入后当前页立刻过滤，稍后出现全库搜索结果。
-6. 重新 `generate` 并部署后，线上首页与 Issues 最新列表一致。
+6. 重新 `generate` 并部署后：首页分页 `/?page=4` 有第 4 页数据；点进 `/blog/post/294` 直接出正文；Network 不应再出现 `api.github.com` 的 403。
+7. 打开 `/blog/data/posts.json` 应能看到文章列表 JSON。
