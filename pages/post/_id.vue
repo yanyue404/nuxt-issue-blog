@@ -76,12 +76,13 @@
 
 <script>
 import { mapState } from 'vuex'
-import http from '../plugins/http/http'
-import Comment from '../components/comment'
-import Catalog from '../components/Catalog'
-import PageHeader from '../components/PageHeader'
+import http from '@/plugins/http/http'
+import Comment from '@/components/comment'
+import Catalog from '@/components/Catalog'
+import PageHeader from '@/components/PageHeader'
 import { formatPassTime, formatDateTime } from '@/utils/date'
 import { SERIES_KEY } from '@/utils/constants'
+import { decorateIssueHtml, getPostIdFromRoute } from '@/utils/github'
 
 export default {
   name: 'Post',
@@ -89,6 +90,32 @@ export default {
     Comment,
     Catalog,
     PageHeader
+  },
+  async asyncData({ params, store, app, error }) {
+    const id = params.id
+    try {
+      const res = await http.get(
+        `/repos/${store.getters['blog/repository']}/issues/${id}`
+      )
+      if (!res || !res.data || !res.data.id) {
+        console.error('[post] empty issue payload', id)
+        return error({ statusCode: 404, message: 'Post not found' })
+      }
+      const ungrouped =
+        (app.i18n && app.i18n.t && app.i18n.t('post.ungrouped')) || ''
+      const { html, navList } = decorateIssueHtml(
+        res.data.body_html || '',
+        ungrouped
+      )
+      return {
+        post: Object.assign({}, res.data, { body_html: html }),
+        navList
+      }
+    } catch (err) {
+      console.error('[post] fetch issue failed', id, err && err.message)
+      const status = err.response && err.response.status
+      return error({ statusCode: status || 404, message: 'Post not found' })
+    }
   },
   data() {
     return {
@@ -105,12 +132,33 @@ export default {
       maxScrollAttempts: 10 // 最大尝试次数
     }
   },
+  head() {
+    const title = this.post && this.post.title
+    const excerpt =
+      this.post && this.post.body_html
+        ? this.post.body_html.replace(/<[^>]+>/g, '').slice(0, 120)
+        : ''
+    return {
+      title: title ? `${title} | ${this.$t('seo.title')}` : this.$t('seo.title'),
+      meta: [
+        {
+          hid: 'description',
+          name: 'description',
+          content: excerpt || this.$t('seo.description')
+        }
+      ]
+    }
+  },
   computed: {
     ...mapState({
       userName: (state) => state.blog.userName
     }),
+    postId() {
+      return getPostIdFromRoute(this.$route)
+    },
     currentPath() {
-      return `/blog/post/?id=${this.$route.query.id}`
+      const base = this.$store.state.blog.baseUrl || '/blog/'
+      return `${base}post/${this.postId}`
     },
     // 合并主文章和连载文章的目录
     allNavList() {
@@ -142,9 +190,8 @@ export default {
     }
   },
   watch: {
-    $route() {
-      // 路由变化时重新获取文章
-      this.getIssue()
+    '$route.params.id'(id) {
+      if (!id) return
       this.resetSeriesChildren()
     },
     'post.body_html'() {
@@ -158,7 +205,9 @@ export default {
       this.initialHash = window.location.hash // eslint-disable-line nuxt/no-globals-in-created
     }
     this.resetSeriesChildren()
-    this.getIssue()
+    if (!(this.post && this.post.id)) {
+      this.getIssue()
+    }
   },
   mounted() {
     this.initIntersectionObserver()
@@ -176,64 +225,35 @@ export default {
     formatPassTime,
     formatDateTime,
     getIssue() {
+      const id = this.postId
+      if (!id) return
+      this.navList = []
       http
-        .get(
-          `/repos/${this.$store.getters['blog/repository']}/issues/${this.$route.query.id}`
-        )
+        .get(`/repos/${this.$store.getters['blog/repository']}/issues/${id}`)
         .then((res) => {
-          this.post = res.data
-          let i = -1
-          let h2Index = -1
-
-          this.post.body_html = res.data.body_html.replace(
-            /<h([2-3]) (.*?)>(.*?)<\/h[2-3]>/g,
-            (_, hType, style, text) => {
-              i++
-              const id = `main-heading-H${hType}-${i}`
-
-              if (hType === '2') {
-                h2Index++
-                this.navList.push({
-                  text: text,
-                  id,
-                  type: 'H2',
-                  children: []
-                })
-              } else if (hType === '3' && h2Index >= 0) {
-                // 确保有父级 h2 标题
-                if (!this.navList[h2Index]) {
-                  // 如果没有父级 h2,创建一个默认分组
-                  h2Index++
-                  this.navList.push({
-                    text: this.$t('post.ungrouped'),
-                    id: `default-h2-${h2Index}`,
-                    type: 'H2',
-                    children: []
-                  })
-                }
-                this.navList[h2Index].children.push({
-                  text: text,
-                  id,
-                  type: 'H3'
-                })
-              }
-              return `<h${hType} id="${id}">${text}</h${hType}>`
-            }
+          if (!res || !res.data) {
+            console.error('[post] empty issue payload', id)
+            return
+          }
+          const { html, navList } = decorateIssueHtml(
+            res.data.body_html || '',
+            this.$t('post.ungrouped')
           )
-
-          // 内容处理完成后，尝试滚动到初始 hash 位置
+          this.post = Object.assign({}, res.data, { body_html: html })
+          this.navList = navList
           this.$nextTick(() => {
             this.scrollToHashElement(this.initialHash)
           })
         })
         .catch((err) => {
-          if (err.response.status === 404) {
+          console.error('[post] fetch issue failed', id, err && err.message)
+          if (err.response && err.response.status === 404) {
             this.$router.push('/404')
           }
         })
     },
     chipClickHandler(labelName) {
-      this.$router.push(`/label/?name=${labelName}`)
+      this.$router.push(`/label/${encodeURIComponent(labelName)}`)
     },
     toH1(e) {
       e.preventDefault()
@@ -316,7 +336,7 @@ export default {
       }
     },
     goEditPost() {
-      const editUrl = `https://github.com/${this.$store.getters['blog/repository']}/issues/${this.$route.query.id}`
+      const editUrl = `https://github.com/${this.$store.getters['blog/repository']}/issues/${this.postId}`
       window.open(editUrl, '_blank')
     },
     updateCurrentSeries() {

@@ -75,11 +75,16 @@ export default {
   data() {
     return {
       comments: [],
-      addCommentUrl: `https://github.com/${this.$store.getters['blog/repository']}/issues/${this.$route.query.id}`,
       authorName: this.$store.state.blog.userName
     }
   },
   computed: {
+    postId() {
+      return this.$route.params.id || this.$route.query.id
+    },
+    addCommentUrl() {
+      return `https://github.com/${this.$store.getters['blog/repository']}/issues/${this.postId}`
+    },
     authorComments() {
       return this.comments.filter(
         (comment) => comment.user.login === this.authorName
@@ -176,7 +181,7 @@ export default {
     async getComments() {
       try {
         const { data } = await http.get(
-          `/repos/${this.$store.getters['blog/repository']}/issues/${this.$route.query.id}/comments`
+          `/repos/${this.$store.getters['blog/repository']}/issues/${this.postId}/comments`
         )
         this.comments = data
       } catch (err) {
@@ -189,7 +194,7 @@ export default {
     },
 
     goEditComment(commentId) {
-      const editUrl = `https://github.com/${this.$store.getters['blog/repository']}/issues/${this.$route.query.id}#issuecomment-${commentId}`
+      const editUrl = `https://github.com/${this.$store.getters['blog/repository']}/issues/${this.postId}#issuecomment-${commentId}`
       window.open(editUrl, '_blank')
     },
 

@@ -4,7 +4,7 @@
     <Nav />
     <BlogList
       :pending="pending"
-      :postList="postList"
+      :postList="displayPostList"
       :pageNum.sync="pageNum"
       :total_count="total_count"
       @page-change="handleCurrentChange"
@@ -39,7 +39,6 @@ export default {
   },
   computed: {
     ...mapState({
-      serverLoaded: (state) => state.blog.serverLoaded,
       postList: (state) => state.blog.postList,
       page: (state) => state.blog.page,
       total_count: (state) => state.blog.total_count,
@@ -53,11 +52,19 @@ export default {
       set(val) {
         return toNumber(val)
       }
+    },
+    displayPostList() {
+      const key = (this.keyWorld || '').trim().toLowerCase()
+      if (!key) return this.postList
+      return this.postList.filter((post) => {
+        const title = (post.title || '').toLowerCase()
+        const body = (post.body_html || '').toLowerCase()
+        return title.includes(key) || body.includes(key)
+      })
     }
   },
   watch: {
     $route() {
-      // 标签分类
       if (this.$route.query.page) {
         this.getIssueList({ page: toNumber(this.$route.query.page) })
       }
@@ -67,12 +74,12 @@ export default {
     }
   },
   created() {
-    this.debouncedCallback = debounce((...args) => {
+    this.debouncedCallback = debounce(() => {
       if (getQueryString('page')) {
         this.updatePage(1)
         this.$router.push(`/`)
       }
-      this.getIssueList({ page: toNumber(this.page) })
+      this.getIssueList({ page: toNumber(this.page) || 1 })
     }, 500)
   },
   beforeMount() {
@@ -80,11 +87,11 @@ export default {
     if (page) {
       this.updatePage(page)
     }
-    if (!this.serverLoaded || page) {
-      this.getIssueList({ page: toNumber(this.page) })
-    } else {
-      console.log('首屏数据在服务端加载好了！')
-    }
+    // 每次进入首页都拉最新，避免 generate 快照 / session 缓存导致旧文
+    console.log('[index] refetch issue list', {
+      page: toNumber(this.page) || 1
+    })
+    this.getIssueList({ page: toNumber(this.page) || 1 })
   },
   methods: {
     ...mapActions({

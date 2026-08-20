@@ -5,6 +5,9 @@ on:
       - master
   schedule:
     - cron: "0 21 * * *" # UTC 21:00 (北京时间 05:00)
+  workflow_dispatch:
+  repository_dispatch:
+    types: [blog-content-updated]
 
 jobs:
   build-and-deploy:
@@ -42,6 +45,8 @@ jobs:
         run: npm install
 
       - name: Build Nuxt Pages
+        env:
+          GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN }}
         run: npm run generate
 
       - name: Deploy to Pages

@@ -1,6 +1,20 @@
 import blogConfig from './blog.config'
 const path = require('path')
 
+if (!process.env.GITHUB_TOKEN) {
+  try {
+    const conf = require('./blog.config.cjs')
+    if (conf.accessToken) {
+      process.env.GITHUB_TOKEN = Buffer.from(
+        conf.accessToken,
+        'base64'
+      ).toString()
+    }
+  } catch (e) {
+    console.warn('[nuxt.config] GITHUB_TOKEN not set', e && e.message)
+  }
+}
+
 // 资源路径前缀，生产环境使用cdn域名
 const publicPath =
   process.env.PATH_TYPE !== 'production' ? '/_nuxt/' : '/_nuxt/'
@@ -64,8 +78,7 @@ export default {
   modules: ['@nuxtjs/axios'],
   axios: {
     proxy: true, // 表示开启代理
-    // prefix: '/api/chanel', // 表示给请求url加个前缀 /api
-    credentials: true // 表示跨域请求时是否需要使用凭证
+    credentials: false
   },
   // Build Configuration: https://go.nuxtjs.dev/config-build
   build: {
@@ -120,7 +133,79 @@ export default {
     resourceHints: false,
     asyncScripts: true
   },
-  proxy: ['https://api.github.com/search', 'https://api.github.com/repos'],
+  proxy: (function githubProxy() {
+    const token = process.env.GITHUB_TOKEN || ''
+    const headers = {
+      Accept: 'application/vnd.github.v3.html',
+      'User-Agent': 'nuxt-issue-blog'
+    }
+    if (token) {
+      headers.Authorization = `token ${token}`
+    } else {
+      console.warn('[nuxt.config] github proxy has no token')
+    }
+    const makeProxy = () => ({
+      target: 'https://api.github.com',
+      changeOrigin: true,
+      headers: Object.assign({}, headers)
+    })
+    return {
+      '/repos': makeProxy(),
+      '/search': makeProxy(),
+      '/users': makeProxy()
+    }
+  })(),
+  generate: {
+    fallback: '404.html',
+    interval: 50,
+    concurrency: 2,
+    async routes() {
+      const axios = require('axios')
+      const config = require('./blog.config.cjs')
+      const token = process.env.GITHUB_TOKEN || ''
+      const headers = {
+        Accept: 'application/vnd.github.v3+json',
+        'User-Agent': 'nuxt-issue-blog'
+      }
+      if (token) {
+        headers.Authorization = `token ${token}`
+      }
+      const perPage = 100
+      let page = 1
+      const routes = []
+      const labels = new Set()
+      while (page <= 20) {
+        const res = await axios.get(
+          `https://api.github.com/repos/${config.userName}/${config.repository}/issues`,
+          {
+            params: {
+              state: 'open',
+              sort: 'created',
+              direction: 'desc',
+              per_page: perPage,
+              page
+            },
+            headers
+          }
+        )
+        const issues = (res.data || []).filter((item) => !item.pull_request)
+        if (!issues.length) break
+        issues.forEach((issue) => {
+          routes.push('/post/' + issue.number)
+          ;(issue.labels || []).forEach((label) => {
+            if (label.name) labels.add(label.name)
+          })
+        })
+        if (issues.length < perPage) break
+        page += 1
+      }
+      labels.forEach((name) => {
+        routes.push('/label/' + encodeURIComponent(name))
+      })
+      console.log('[generate] pre-render routes', routes.length)
+      return routes
+    }
+  },
   server: {
     port: 9527,
     host: '127.0.0.1'

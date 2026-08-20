@@ -1,5 +1,5 @@
 <template>
-  <div v-show="postList.length !== 0">
+  <div v-show="pending || postList.length !== 0">
     <!-- 博客列表 -->
     <BlogItem :pending="pending" :postList="postList" />
     <!-- 分页 -->

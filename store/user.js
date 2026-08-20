@@ -25,8 +25,12 @@ export const mutations = {
 
 export const actions = {
   getUserInfo({ rootState, commit }) {
-    getUser({ userName: rootState.blog.userName }).then((res) => {
-      commit('updateUser', res.data)
-    })
+    return getUser({ userName: rootState.blog.userName })
+      .then((res) => {
+        commit('updateUser', res.data)
+      })
+      .catch((err) => {
+        console.error('[user/getUserInfo] failed', err)
+      })
   }
 }

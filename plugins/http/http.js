@@ -1,54 +1,67 @@
 import * as axios from "axios";
 import qs from "qs";
-import blogConf from "~/blog.config";
 
 global.Buffer = global.Buffer || require("buffer").Buffer;
 
-let baseURL = "https://api.github.com";
+function resolveGithubToken() {
+  if (!process.server) return "";
+  const envToken = process.env["GITHUB_TOKEN"];
+  if (envToken) return envToken;
+  try {
+    const conf = require("../../blog.config.cjs");
+    if (conf.accessToken) {
+      return Buffer.from(conf.accessToken, "base64").toString();
+    }
+  } catch (e) {
+    console.warn("[http] server token missing", e && e.message);
+  }
+  return "";
+}
 
-// 1)实例化一个axios对象 http（根据当前环境配置baseURL）
+function resolveBaseURL() {
+  // 本地 nuxt 开发：走同源代理，由服务端附带 Token，避免浏览器 60次/小时限额
+  if (process.client && process.env.PATH_TYPE !== "production") {
+    return "/";
+  }
+  return "https://api.github.com";
+}
+
+const token = resolveGithubToken();
+const baseURL = resolveBaseURL();
+const headers = {
+  Accept: "application/vnd.github.v3.html",
+};
+if (token) {
+  headers.Authorization = `token ${token}`;
+}
+
+console.log("[http] github client", {
+  baseURL,
+  hasToken: Boolean(token),
+  server: Boolean(process.server),
+  pathType: process.env.PATH_TYPE,
+});
+
 const http = axios.create({
   baseURL: baseURL,
   timeout: 10000,
-  headers: {
-    Accept: "application/vnd.github.v3.html",
-    Authorization: `token ${Buffer.from(
-      blogConf.accessToken,
-      "base64"
-    ).toString()}`,
-  },
+  headers,
 });
 
-// 2）设置默认请求头的content-type
-// http.defaults.headers["Content-Type"] = "application/json";
-
-// 3）请求拦截
 http.interceptors.request.use(
   (config) => {
-    // console.log("请求拦截----", config);
-    if (config.loading !== false) {
-      // $nuxt.__proto__.$loading.show();
-    }
     return config;
   },
   (error) => {
-    // console.error("request", qs.parse(error));
-    // $nuxt.__proto__.$loading.hide();
     return Promise.reject(error);
   }
 );
 
-//4）响应拦截
 http.interceptors.response.use(
   (response) => {
-    // console.log("响应拦截----", response);
-    if (response.config.loading !== false) {
-      // $nuxt.__proto__.$loading.hide();
-    }
     return response;
   },
   (error) => {
-    // $nuxt.__proto__.$loading.hide();
     let errMsg = {};
     if (qs.parse(error).response) {
       switch (qs.parse(error).response.status) {
@@ -90,9 +103,11 @@ http.interceptors.response.use(
       }
       errMsg.status = qs.parse(error).response.status;
       errMsg.url = qs.parse(error).response.config.url;
+    } else {
+      errMsg.message = error.message || "网络异常";
     }
-    // console.error("response", errMsg);
-    return errMsg;
+    console.error("[http] github api error", errMsg);
+    return Promise.reject(error);
   }
 );
 

@@ -22,7 +22,7 @@
       </el-skeleton>
     </div>
     <div v-show="!pending" class="card-container">
-      <div v-for="(post, index) in postList" :key="index" class="card">
+      <div v-for="post in postList" :key="post.number" class="card">
         <div class="q-item">
           <div
             class="q-item__section q-item__section--main"
@@ -42,7 +42,7 @@
           <div class="q-item__section column">
             <div
               v-for="label in post.labels"
-              :key="label.index"
+              :key="label.id || label.name"
               class="tag-label"
               :style="`--label-color: #${label.color}`"
               @click="chipClickHandler(label.name)"
@@ -65,6 +65,7 @@ export default {
       return dateFormat('YYYY-MM-dd hh:mm:ss', new Date(d))
     },
     htmlToText(html) {
+      if (!html) return ''
       return (
         html
           .replace(/<\/?.+?>/g, '') // 移除HTML标签
@@ -92,10 +93,10 @@ export default {
   },
   methods: {
     toPostDetail(id) {
-      this.$router.push(`/post/?id=${id}`)
+      this.$router.push(`/post/${id}`)
     },
     chipClickHandler(labelName) {
-      this.$router.push(`/label/?name=${labelName}`)
+      this.$router.push(`/label/${encodeURIComponent(labelName)}`)
     },
     processPost(post) {
       return {
