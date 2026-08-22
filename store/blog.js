@@ -70,20 +70,46 @@ function filterByKey(posts, key) {
 }
 
 export const actions = {
-  async ensureStaticPosts({ state, commit }) {
+  async ensureStaticPosts({ state, commit, getters }) {
     if (state.allPosts && state.allPosts.length) {
       return state.allPosts
     }
-    const url = `${state.baseUrl || '/blog/'}data/posts.json`
-    console.log('[blog] load static posts', url)
-    const res = await fetch(url)
-    if (!res.ok) {
-      throw new Error('static posts ' + res.status)
+    // 优先尝试加载 posts.json（静态/生产环境）
+    try {
+      const url = `${state.baseUrl || '/blog/'}data/posts.json`
+      const res = await fetch(url)
+      if (res.ok) {
+        const data = await res.json()
+        const posts = data.posts || []
+        if (posts.length) {
+          commit('setAllPosts', posts)
+          return posts
+        }
+      }
+    } catch (e) {
+      // posts.json 不存在，走 API fallback
     }
-    const data = await res.json()
-    const posts = data.posts || []
-    commit('setAllPosts', posts)
-    return posts
+    // 开发模式 fallback：从 GitHub API 分页拉取全部文章
+    try {
+      const allPosts = []
+      let page = 1
+      const perPage = 100
+      while (page <= 20) {
+        const res = await http.get(
+          `/repos/${getters.repository}/issues?state=open&sort=created&direction=desc&page=${page}&per_page=${perPage}`
+        )
+        const posts = (res.data || [])
+          .filter((item) => !isPullRequest(item))
+          .map(mapIssueToPost)
+        allPosts.push(...posts)
+        if (posts.length < perPage) break
+        page++
+      }
+      commit('setAllPosts', allPosts)
+      return allPosts
+    } catch (e) {
+      return []
+    }
   },
 
   async getIssueList(

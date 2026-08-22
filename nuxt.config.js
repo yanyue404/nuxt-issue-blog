@@ -61,7 +61,11 @@ export default {
   },
 
   // Global CSS: https://go.nuxtjs.dev/config-css
-  css: ['~/styles/reset.css', '~/styles/global.scss'],
+  css: [
+    '~/styles/reset.css',
+    '~/styles/global.scss',
+    '~/styles/github-markdown-vars.scss'
+  ],
 
   // Plugins to run before rendering page: https://go.nuxtjs.dev/config-plugins
   plugins: [
@@ -72,6 +76,18 @@ export default {
     {
       src: '~/plugins/i18n.js',
       ssr: true
+    },
+    {
+      src: '~/plugins/posts-disk.server.js',
+      ssr: true
+    },
+    {
+      src: '~/plugins/code-copy.client.js',
+      ssr: false
+    },
+    {
+      src: '~/plugins/lazy-images.client.js',
+      ssr: false
     }
   ],
 
@@ -127,7 +143,7 @@ export default {
       }
     },
     extractCSS: { allChunks: false },
-    analyze: true,
+    analyze: false,
     profile: false
   },
   render: {
@@ -158,43 +174,80 @@ export default {
   })(),
   generate: {
     fallback: '404.html',
-    interval: 50,
+    interval: 80,
     concurrency: 2,
     async routes() {
       const axios = require('axios')
+      const { writeIssueCache } = require('./utils/posts-snapshot.cjs')
       const config = require('./blog.config.cjs')
       const token = process.env.GITHUB_TOKEN || ''
       const headers = {
-        Accept: 'application/vnd.github.v3+json',
+        Accept: 'application/vnd.github.v3.html',
         'User-Agent': 'nuxt-issue-blog'
       }
       if (token) {
         headers.Authorization = `token ${token}`
+      } else {
+        console.warn('[generate] no GITHUB_TOKEN, listing may be rate-limited')
+      }
+      async function fetchPage(page, perPage) {
+        let lastErr
+        for (let attempt = 1; attempt <= 4; attempt++) {
+          try {
+            return await axios.get(
+              `https://api.github.com/repos/${config.userName}/${config.repository}/issues`,
+              {
+                params: {
+                  state: 'open',
+                  sort: 'created',
+                  direction: 'desc',
+                  per_page: perPage,
+                  page
+                },
+                headers,
+                timeout: 30000
+              }
+            )
+          } catch (err) {
+            lastErr = err
+            const status = err.response && err.response.status
+            console.warn(
+              '[generate] list issues failed',
+              { page, attempt, status, message: err.message }
+            )
+            if (status === 404) throw err
+            await new Promise((resolve) => setTimeout(resolve, 800 * attempt))
+          }
+        }
+        throw lastErr
       }
       const perPage = 100
       let page = 1
       const routes = []
       const labels = new Set()
       const posts = []
+      const rawIssues = []
       while (page <= 20) {
-        const res = await axios.get(
-          `https://api.github.com/repos/${config.userName}/${config.repository}/issues`,
-          {
-            params: {
-              state: 'open',
-              sort: 'created',
-              direction: 'desc',
-              per_page: perPage,
-              page
-            },
-            headers
-          }
-        )
+        const res = await fetchPage(page, perPage)
         const issues = (res.data || []).filter((item) => !item.pull_request)
         if (!issues.length) break
         issues.forEach((issue) => {
+          rawIssues.push(issue)
           posts.push(mapIssue(issue))
-          routes.push('/post/' + issue.number)
+          routes.push({
+            route: '/post/' + issue.number,
+            payload: {
+              id: issue.id,
+              number: issue.number,
+              title: issue.title,
+              created_at: issue.created_at,
+              updated_at: issue.updated_at,
+              body_html: issue.body_html || issue.body || '',
+              user: issue.user,
+              labels: issue.labels || [],
+              html_url: issue.html_url
+            }
+          })
           ;(issue.labels || []).forEach((label) => {
             if (label.name) labels.add(label.name)
           })
@@ -205,8 +258,9 @@ export default {
       labels.forEach((name) => {
         routes.push('/label/' + encodeURIComponent(name))
       })
+      writeIssueCache(rawIssues)
       writePostsJson(posts)
-      console.log('[generate] pre-render routes', routes.length)
+      console.log('[generate] pre-render routes', routes.length, 'posts', posts.length)
       return routes
     }
   },

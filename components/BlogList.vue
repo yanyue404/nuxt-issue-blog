@@ -86,7 +86,7 @@ export default {
     }
 
     button:disabled {
-      background-color: #f4f4f5;
+      background-color: var(--md-canvas-subtle);
     }
   }
 }

@@ -1,6 +1,8 @@
 export default {
   nav: {
-    searchPlaceholder: 'Search post title / keyword'
+    searchPlaceholder: 'Search posts...',
+    noResults: 'No results found',
+    searchHint: 'Type to search posts...'
   },
   header: {
     star: 'Star'
@@ -20,11 +22,18 @@ export default {
   post: {
     publishedAt: 'Published on {date}',
     editPost: 'Edit Post',
-    ungrouped: 'Ungrouped'
+    ungrouped: 'Ungrouped',
+    prevPost: 'Previous',
+    nextPost: 'Next',
+    backHome: 'Home',
+    relatedPosts: 'Related Posts',
+    readingTime: '{min} min read'
   },
   label: {
     allPosts: 'All posts under this label',
-    totalPosts: '{count} posts in total'
+    totalPosts: '{count} posts in total',
+    allLabels: 'Labels',
+    recentPosts: 'Recent Posts'
   },
   comment: {
     seriesCount: 'Series ({count} posts)',

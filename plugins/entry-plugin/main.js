@@ -1,5 +1,4 @@
 import Vue from "vue";
-import "github-markdown-css/github-markdown.css";
 import {
   Button,
   Skeleton,

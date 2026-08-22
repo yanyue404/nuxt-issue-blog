@@ -12,16 +12,22 @@
 
 ## ✨ 特性
 
-- 📦 使用 SSG 静态生成，部署快速，支持 SEO
-- 🌙 支持浅色/深色主题切换
+- 📦 SSG 静态生成，适合 GitHub Pages；生产环境读 `posts.json`，浏览器不再直连 GitHub API
+- 🌙 CSS 变量驱动的浅色/深色主题（`localStorage` 记忆）；Markdown 颜色走同一套 `--md-*` 变量
 - 💬 使用 GitHub Issues 作为 CMS
-- 🔄 GitHub Actions 自动部署
+- 🔄 GitHub Actions 自动部署（手动触发 + 内容仓库触发）
+- 🌐 中英双语
 - 📱 移动端适配，响应式设计
-- 🎨 简洁优雅的界面设计
-- 🔍 支持全文搜索
-- 📝 Markdown 支持代码高亮
-- 🏷️ 基于 Label 的文章分类
-- 📊 文章目录导航
+- 🎨 渐变 Hero 首屏 + 淡网格，明暗两套配色
+- 🔍 Command Palette（`Ctrl/⌘ + K`）搜索标题与正文摘要，命中词高亮，ESC 关闭
+- 📝 Markdown 代码高亮 + 一键复制代码
+- 🏷️ 标签云：首页按 Label 过滤文章
+- 📊 文章页三栏：吸顶目录 + 正文 + 相关推荐
+- ⏱️ 阅读进度条、阅读时间估算、上一篇/下一篇
+- 🖼️ 图片懒加载，骨架屏与真实列表结构对齐
+- 🔎 逐篇文章 SEO：`<title>`、`description`、Open Graph、Twitter 卡片取自文章标题和摘要
+
+实现细节见 [docs/optimizations.md](./docs/optimizations.md)
 
 ## 🚀 快速开始
 
@@ -29,7 +35,7 @@
 
 ```bash
 - git: ^v2.0.0
-- node: ^v12.18.3
+- node: >=16
 - yarn: ^v1.12.0
 ```
 
@@ -55,7 +61,7 @@ read: org         读取组织信息
 
 1. Fork 本仓库
 2. 克隆到本地
-3. 编辑 `blog.config.js`：
+3. 编辑 `blog.config.cjs`（唯一配置源；`blog.config.js` 会 re-export 并剥离 Token）：
 
 ```js
 module.exports = {
@@ -63,8 +69,11 @@ module.exports = {
   userName: '你的用户名',
   userEmail: '你的邮箱',
   repository: 'blog',
-  accessToken: '经过base64编码的token',
+  // 仅构建阶段使用（nuxt.config.js / CI），不会打进前端包
+  accessToken: '经过 base64 编码的 token',
   blogName: '你的博客名称',
+  heroTitle: '欢迎来到我的博客',
+  heroSubtitle: 'Hero 区的一句话介绍',
   seo: {
     title: '博客标题',
     description: '博客描述',
@@ -73,13 +82,15 @@ module.exports = {
 }
 ```
 
+> Token 只在服务端 / 构建时读取（`GITHUB_TOKEN` 或 `blog.config.cjs`），公开配置里会剥掉，不会进入浏览器包。
+
 ### 开发部署
 
 ```bash
 # 安装依赖
 yarn install
 
-# 启动开发服务器
+# 启动开发服务器（默认 http://localhost:9527/blog/）
 yarn serve
 
 # 构建生产版本
@@ -88,6 +99,12 @@ yarn build
 # 部署到 GitHub Pages
 yarn deploy
 ```
+
+### 生产环境注意
+
+- CI 需设置 `GITHUB_TOKEN`（来自 `secrets.ACCESS_TOKEN`），以便 `nuxt generate` 预渲染全部 open issues。
+- 构建会写出 `/blog/data/posts.json`，供列表、搜索、标签、分页使用。
+- 文章页是静态 HTML。线上暂不请求 GitHub 评论（避免 403），读者通过 Issue 留言。
 
 ## 🤝 贡献指南
 

@@ -136,6 +136,20 @@ export default {
     processSeriesContent(content, commentId) {
       if (!content) return ''
 
+      // generate / SSR 没有 document，不能用 DOM；只注入标题 id，目录在客户端再收集
+      if (typeof document === 'undefined') {
+        let i = -1
+        return String(content).replace(
+          /<h([23])([^>]*)>([\s\S]*?)<\/h[23]>/gi,
+          (match, level, attrs, text) => {
+            i++
+            const hType = level === '2' ? 'H2' : 'H3'
+            const id = `series-heading-${commentId}-${hType}-${i}`
+            return `<h${level} id="${id}">${text}</h${level}>`
+          }
+        )
+      }
+
       // 创建临时 DOM 元素来解析 HTML
       const tempDiv = document.createElement('div')
       tempDiv.innerHTML = content
@@ -265,9 +279,9 @@ export default {
   padding: 20px;
   margin-bottom: 16px;
   border-radius: 4px;
-  background: #fff;
+  background: var(--background-color);
   transition: all 0.3s ease;
-  border: 1px solid #ebeef5;
+  border: 1px solid var(--border-color);
 
   &:hover {
     box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
@@ -310,7 +324,7 @@ export default {
 }
 
 .time {
-  color: #909399;
+  color: var(--juejin-font-3);
   font-size: 13px;
 }
 
@@ -329,7 +343,7 @@ h2 {
   margin-bottom: 20px;
   font-weight: 600;
   font-size: 18px;
-  color: #303133;
+  color: var(--juejin-font-1);
 }
 
 .series-catalog {

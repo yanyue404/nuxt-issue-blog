@@ -1,6 +1,8 @@
 export default {
   nav: {
-    searchPlaceholder: '搜索文章标题/关键字'
+    searchPlaceholder: '搜索文章...',
+    noResults: '没有找到相关文章',
+    searchHint: '输入关键词搜索文章'
   },
   header: {
     star: 'Star'
@@ -20,11 +22,18 @@ export default {
   post: {
     publishedAt: '发布于 {date}',
     editPost: '编辑文章',
-    ungrouped: '未分组'
+    ungrouped: '未分组',
+    prevPost: '上一篇',
+    nextPost: '下一篇',
+    backHome: '首页',
+    relatedPosts: '相关推荐',
+    readingTime: '约 {min} 分钟'
   },
   label: {
     allPosts: '标签下的所有文章',
-    totalPosts: '共 {count} 篇文章'
+    totalPosts: '共 {count} 篇文章',
+    allLabels: '分类标签',
+    recentPosts: '最近更新'
   },
   comment: {
     seriesCount: '文章连载（{count} 篇）',

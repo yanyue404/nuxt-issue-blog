@@ -44,7 +44,7 @@ console.log("[http] github client", {
 
 const http = axios.create({
   baseURL: baseURL,
-  timeout: 10000,
+  timeout: 30000,
   headers,
 });
 

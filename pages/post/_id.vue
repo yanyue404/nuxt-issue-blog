@@ -1,76 +1,93 @@
 <template>
   <div class="article-block">
-    <!-- 加载中，文章骨架屏 -->
-    <div v-show="!post.id" class="main-area article-area">
-      <el-skeleton style="width: 100%" animated>
-        <template slot="template">
-          <div class="article-header">
-            <div><el-skeleton-item variant="h1" style="width: 50%" /></div>
-            <code class="text-italic">
-              <el-skeleton-item variant="text" style="width: 25%"
-            /></code>
-          </div>
-          <div v-for="item in [1, 2, 3, 4]" :key="item">
-            <el-skeleton-item variant="h2" style="width: 40%" />
-            <div style="padding: 14px">
-              <el-skeleton v-show="item % 2 === 1" :rows="10" animated />
-              <el-skeleton v-show="item % 2 === 0" :rows="4" animated />
+    <ReadingProgress />
 
-              <el-skeleton-item
-                v-show="item % 2 === 0"
-                variant="image"
-                style="width: 100%; height: 240px"
-              />
-              <el-skeleton v-show="item % 2 === 0" :rows="6" animated />
-            </div>
-          </div>
-        </template>
-      </el-skeleton>
-    </div>
-    <!-- 加载完毕 -->
-    <div v-show="post.id" class="main-area article-area" padding>
-      <PageHeader
-        :title="post.title"
-        :meta="[
-          { icon: 'el-icon-user', text: userName },
-          {
-            icon: 'el-icon-time',
-            text: $t('post.publishedAt', {
-              date: formatDateTime(post.created_at)
-            })
-          }
-        ]"
-      >
-        <template #actions>
-          <el-button
-            type="primary"
-            size="small"
-            icon="el-icon-edit"
-            class="edit-button"
-            @click="goEditPost"
-          >
-            {{ $t('post.editPost') }}
-          </el-button>
-        </template>
-      </PageHeader>
-      <div class="q-mt-lg" v-html="post.body_html" />
-      <el-backtop />
-      <Comment
-        ref="commentComponent"
-        :preloaded-comments="preloadedComments"
-        @series-content-updated="handleSeriesContentUpdated"
-      ></Comment>
-    </div>
-    <div class="article-gap"></div>
-
-    <!-- 统一的目录 -->
-    <div v-show="post.id" class="article-sideBar">
+    <!-- 左侧：浮动目录 -->
+    <div v-show="post.id" class="article-sidebar-left">
       <Catalog
         :nav-list="allNavList"
         :active-id="activeId"
         :base-path="currentPath"
         @catalog-click="handleCatalogClick"
       />
+    </div>
+
+    <!-- 中间：正文 -->
+    <div class="article-center">
+      <!-- 加载中骨架屏 -->
+      <div v-show="!post.id" class="article-area">
+        <el-skeleton style="width: 100%" animated>
+          <template slot="template">
+            <div class="article-header">
+              <div><el-skeleton-item variant="h1" style="width: 50%" /></div>
+              <code class="text-italic">
+                <el-skeleton-item variant="text" style="width: 25%"
+              /></code>
+            </div>
+            <div v-for="item in [1, 2, 3, 4]" :key="item">
+              <el-skeleton-item variant="h2" style="width: 40%" />
+              <div style="padding: 14px">
+                <el-skeleton v-show="item % 2 === 1" :rows="10" animated />
+                <el-skeleton v-show="item % 2 === 0" :rows="4" animated />
+                <el-skeleton-item
+                  v-show="item % 2 === 0"
+                  variant="image"
+                  style="width: 100%; height: 240px"
+                />
+                <el-skeleton v-show="item % 2 === 0" :rows="6" animated />
+              </div>
+            </div>
+          </template>
+        </el-skeleton>
+      </div>
+      <!-- 正文 -->
+      <div v-show="post.id" class="article-area">
+        <nav class="breadcrumb">
+          <a class="breadcrumb-link" href="/blog/" @click.prevent="goHome">
+            <i class="el-icon-house"></i> {{ $t('post.backHome') }}
+          </a>
+          <span class="breadcrumb-sep">/</span>
+          <span class="breadcrumb-current">{{ post.title }}</span>
+        </nav>
+        <PageHeader
+          :title="post.title"
+          :meta="[
+            { icon: 'el-icon-user', text: userName },
+            {
+              icon: 'el-icon-time',
+              text: $t('post.publishedAt', {
+                date: formatDateTime(post.created_at)
+              })
+            },
+            { icon: 'el-icon-reading', text: readingTime }
+          ]"
+        >
+          <template #actions>
+            <el-button
+              type="primary"
+              size="small"
+              icon="el-icon-edit"
+              class="edit-button"
+              @click="goEditPost"
+            >
+              {{ $t('post.editPost') }}
+            </el-button>
+          </template>
+        </PageHeader>
+        <div class="q-mt-lg" v-html="post.body_html" />
+        <PostNav :current-id="postId" />
+        <el-backtop />
+        <Comment
+          ref="commentComponent"
+          :preloaded-comments="preloadedComments"
+          @series-content-updated="handleSeriesContentUpdated"
+        ></Comment>
+      </div>
+    </div>
+
+    <!-- 右侧：推荐阅读 -->
+    <div v-show="post.id" class="article-sidebar-right">
+      <RelatedPosts :current-id="postId" :labels="post.labels || []" />
     </div>
   </div>
 </template>
@@ -81,6 +98,9 @@ import http from '@/plugins/http/http'
 import Comment from '@/components/comment'
 import Catalog from '@/components/Catalog'
 import PageHeader from '@/components/PageHeader'
+import ReadingProgress from '@/components/ReadingProgress'
+import PostNav from '@/components/PostNav'
+import RelatedPosts from '@/components/RelatedPosts'
 import { formatPassTime, formatDateTime } from '@/utils/date'
 import { SERIES_KEY } from '@/utils/constants'
 import { decorateIssueHtml, getPostIdFromRoute, isStaticClient } from '@/utils/github'
@@ -90,47 +110,75 @@ export default {
   components: {
     Comment,
     Catalog,
+    ReadingProgress,
+    PostNav,
+    RelatedPosts,
     PageHeader
   },
-  async asyncData({ params, store, app, error }) {
+  async asyncData({ params, payload, store, app, error }) {
     const id = params.id
     if (isStaticClient()) {
       console.warn('[post] skip github fetch on static host', id)
       return
     }
-    try {
-      const repo = store.getters['blog/repository']
-      const [res, commentsRes] = await Promise.all([
-        http.get(`/repos/${repo}/issues/${id}`),
-        http.get(`/repos/${repo}/issues/${id}/comments`).catch(() => ({ data: [] }))
-      ])
-      if (!res || !res.data || !res.data.id) {
-        console.error('[post] empty issue payload', id)
-        return error({ statusCode: 404, message: 'Post not found' })
-      }
-      const ungrouped =
-        (app.i18n && app.i18n.t && app.i18n.t('post.ungrouped')) || ''
+    const ungrouped =
+      (app.i18n && app.i18n.t && app.i18n.t('post.ungrouped')) || ''
+    const buildPayload = (issue, comments) => {
       const { html, navList } = decorateIssueHtml(
-        res.data.body_html || '',
+        issue.body_html || issue.body || '',
         ungrouped
       )
       return {
-        post: Object.assign({}, res.data, { body_html: html }),
+        post: Object.assign({}, issue, { body_html: html }),
         navList,
-        preloadedComments: commentsRes.data || []
+        preloadedComments: comments || []
       }
-    } catch (err) {
-      console.error('[post] fetch issue failed', id, err && err.message)
-      const status = err.response && err.response.status
-      if (status === 403 || status === 429) {
-        console.warn('[post] rate limited, keep generated payload', id)
-        return
-      }
-      if (status === 404) {
-        return error({ statusCode: 404, message: 'Post not found' })
-      }
-      return
     }
+
+    // nuxt generate 通过 routes().payload 传入全文，避免每页再打 GitHub、也不把 fs 打进客户端包
+    if (payload && (payload.id || payload.body_html || payload.title)) {
+      let comments = []
+      try {
+        const repo = store.getters['blog/repository']
+        const commentsRes = await http
+          .get(`/repos/${repo}/issues/${id}/comments`)
+          .catch(() => ({ data: [] }))
+        comments = commentsRes.data || []
+      } catch (e) {
+        comments = []
+      }
+      return buildPayload(payload, comments)
+    }
+
+    const repo = store.getters['blog/repository']
+    let lastErr = null
+    for (let attempt = 1; attempt <= 3; attempt++) {
+      try {
+        const [res, commentsRes] = await Promise.all([
+          http.get(`/repos/${repo}/issues/${id}`),
+          http.get(`/repos/${repo}/issues/${id}/comments`).catch(() => ({ data: [] }))
+        ])
+        if (!res || !res.data || !res.data.id) {
+          console.error('[post] empty issue payload', id)
+          lastErr = new Error('empty payload')
+        } else {
+          return buildPayload(res.data, commentsRes.data || [])
+        }
+      } catch (err) {
+        lastErr = err
+        const status = err.response && err.response.status
+        console.error('[post] fetch issue failed', id, {
+          attempt,
+          status,
+          message: err && err.message
+        })
+        if (status === 404) {
+          return error({ statusCode: 404, message: 'Post not found' })
+        }
+        await new Promise((resolve) => setTimeout(resolve, 600 * attempt))
+      }
+    }
+    console.error('[post] give up after retries', id, lastErr && lastErr.message)
   },
   data() {
     return {
@@ -138,29 +186,49 @@ export default {
       navList: [],
       seriesNavList: [],
       activeId: '',
-      seriesHeadings: [], // 存储所有连载文章的标题
-      allSeriesChildren: [], // 存储所有连载文章的目录项
+      seriesHeadings: [],
+      allSeriesChildren: [],
       observer: null,
       isScrollingToHash: false,
-      initialHash: '', // 存储初始的 hash
-      scrollAttempts: 0, // 添加尝试次数计数
-      maxScrollAttempts: 10, // 最大尝试次数
+      hashActivated: false, // 用户点击目录后才开始更新 URL hash
+      initialHash: '',
+      scrollAttempts: 0,
+      maxScrollAttempts: 10,
       preloadedComments: []
     }
   },
   head() {
-    const title = this.post && this.post.title
+    const postTitle = (this.post && this.post.title) || ''
+    const siteTitle = this.$t('seo.title')
+    const fullTitle = postTitle ? `${postTitle} | ${siteTitle}` : siteTitle
     const excerpt =
       this.post && this.post.body_html
-        ? this.post.body_html.replace(/<[^>]+>/g, '').slice(0, 120)
+        ? this.post.body_html
+            .replace(/<[^>]+>/g, '')
+            .replace(/&[a-zA-Z#0-9]+;/g, ' ')
+            .replace(/\s+/g, ' ')
+            .trim()
+            .slice(0, 150)
         : ''
+    const description = excerpt || this.$t('seo.description')
+    const ogTitle = postTitle || siteTitle
     return {
-      title: title ? `${title} | ${this.$t('seo.title')}` : this.$t('seo.title'),
+      title: fullTitle,
       meta: [
+        { hid: 'description', name: 'description', content: description },
+        { hid: 'og:type', property: 'og:type', content: 'article' },
+        { hid: 'og:title', property: 'og:title', content: ogTitle },
         {
-          hid: 'description',
-          name: 'description',
-          content: excerpt || this.$t('seo.description')
+          hid: 'og:description',
+          property: 'og:description',
+          content: description
+        },
+        { hid: 'twitter:card', name: 'twitter:card', content: 'summary' },
+        { hid: 'twitter:title', name: 'twitter:title', content: ogTitle },
+        {
+          hid: 'twitter:description',
+          name: 'twitter:description',
+          content: description
         }
       ]
     }
@@ -171,6 +239,13 @@ export default {
     }),
     postId() {
       return getPostIdFromRoute(this.$route)
+    },
+    readingTime() {
+      if (!this.post || !this.post.body_html) return ''
+      const text = (this.post.body_html || '').replace(/<[^>]+>/g, '')
+      const words = text.length
+      const minutes = Math.max(1, Math.ceil(words / 400))
+      return this.$t('post.readingTime', { min: minutes })
     },
     currentPath() {
       const base = this.$store.state.blog.baseUrl || '/blog/'
@@ -219,6 +294,9 @@ export default {
   created() {
     if (process.client) {
       this.initialHash = window.location.hash // eslint-disable-line nuxt/no-globals-in-created
+      if (this.initialHash) {
+        this.hashActivated = true
+      }
     }
     this.resetSeriesChildren()
     if (this.post && this.post.id) {
@@ -335,8 +413,8 @@ export default {
           entries.forEach((entry) => {
             if (entry.isIntersecting) {
               this.activeId = entry.target.id
-              // 仅在用户滚动时更新 URL
-              if (!this.isScrollingToHash) {
+              // 只有用户主动点击过目录后才更新 URL hash
+              if (this.hashActivated && !this.isScrollingToHash) {
                 const newUrl = `${this.currentPath}#${entry.target.id}`
                 window.history.replaceState(null, '', newUrl)
               }
@@ -358,12 +436,19 @@ export default {
     handleCatalogClick(id) {
       const element = document.getElementById(id)
       if (element) {
+        this.hashActivated = true
         element.scrollIntoView({ behavior: 'smooth', block: 'start' })
-        // 更新 URL，但不触发新的导航
         const newUrl = `${this.currentPath}#${id}`
         window.history.replaceState(null, '', newUrl)
-        // 更新激活的目录项
         this.activeId = id
+      }
+    },
+    goHome() {
+      const base = this.$store.state.blog.baseUrl || '/blog/'
+      if (isStaticClient()) {
+        window.location.href = base
+      } else {
+        this.$router.push('/')
       }
     },
     goEditPost() {
@@ -472,8 +557,56 @@ export default {
 <style lang="scss" scoped>
 .article-block {
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 24px 32px;
+  gap: 48px;
+  position: relative;
+}
+.article-sidebar-left {
+  width: 220px;
+  flex-shrink: 0;
+  position: sticky;
+  top: 80px;
+  max-height: calc(100vh - 100px);
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-top: 8px;
+
+  &::-webkit-scrollbar {
+    width: 3px;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.08);
+    border-radius: 3px;
+  }
+  &::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 0, 0, 0.15);
+  }
+}
+.article-center {
+  flex: 1;
+  min-width: 0;
+  max-width: 820px;
+}
+.article-sidebar-right {
+  width: 200px;
+  flex-shrink: 0;
+  position: sticky;
+  top: 80px;
+  max-height: calc(100vh - 100px);
+  overflow-y: auto;
+  padding-top: 8px;
+
+  &::-webkit-scrollbar {
+    width: 3px;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.1);
+    border-radius: 3px;
+  }
 }
 .article-header {
   margin-bottom: 20px;
@@ -484,70 +617,90 @@ export default {
 }
 .article-area {
   position: relative;
-  width: 820px;
-  max-width: 100%;
+  width: 100%;
   box-sizing: border-box;
-  padding-right: 15px;
 }
-.article-gap {
-  width: 15px;
-  min-height: 100vh;
-  background-color: #f2f3f5;
+
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 0 20px;
+  font-size: 13px;
+  color: var(--juejin-font-3);
 }
-.article-sideBar {
-  width: 300px;
-  position: relative;
-  margin-right: -15px;
-  background-color: #f2f3f5;
-}
-.article-catalog {
-  position: sticky;
-  top: 20px;
-  width: 300px;
-  background: var(--background-color);
-  border-radius: 12px;
-  padding: 16px 0;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
-  transition: all 0.3s ease;
+.breadcrumb-link {
+  color: var(--juejin-font-3);
+  text-decoration: none;
+  transition: color 0.2s;
 
   &:hover {
-    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.08);
+    color: var(--theme-color);
   }
 
+  i {
+    margin-right: 2px;
+  }
+}
+.breadcrumb-sep {
+  color: #ccc;
+}
+.breadcrumb-current {
+  color: var(--juejin-font-1);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 500px;
+}
+
+@media (max-width: 1300px) {
+  .article-sidebar-right {
+    display: none;
+  }
+  .article-block {
+    gap: 36px;
+    max-width: 1100px;
+  }
+}
+@media (max-width: 1000px) {
+  .article-sidebar-left {
+    display: none;
+  }
+  .article-block {
+    padding: 16px;
+    gap: 0;
+  }
+  .article-center {
+    max-width: 100%;
+  }
+}
+.article-catalog {
+  width: 100%;
+  padding: 0;
+
   .catalog-title {
-    padding: 0 24px;
-    margin-bottom: 12px;
-    font-size: 18px;
+    padding: 0 0 10px;
+    margin-bottom: 8px;
+    font-size: 13px;
     font-weight: 600;
-    color: var(--theme-color);
+    color: var(--juejin-font-3);
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    border-bottom: 1px solid var(--border-color);
     line-height: 1.5;
-    border-bottom: 2px solid #eee;
-    padding-bottom: 12px;
 
     div {
-      position: relative;
       display: inline-block;
-
-      &::after {
-        content: '';
-        position: absolute;
-        bottom: -14px;
-        left: 0;
-        width: 100%;
-        height: 2px;
-        background: var(--theme-color);
-        transition: all 0.3s ease;
-      }
     }
   }
 
   .catalog-body {
-    max-height: calc(100vh - 200px);
+    max-height: calc(100vh - 180px);
     overflow-y: auto;
-    padding: 0 8px;
+    padding: 0;
 
     &::-webkit-scrollbar {
-      width: 4px;
+      width: 2px;
     }
 
     &::-webkit-scrollbar-track {
@@ -556,48 +709,51 @@ export default {
 
     &::-webkit-scrollbar-thumb {
       background: #e0e0e0;
-      border-radius: 4px;
-
-      &:hover {
-        background: #d0d0d0;
-      }
+      border-radius: 2px;
     }
   }
 
   .catalog-list {
     .item {
-      margin: 4px 0;
+      margin: 0;
 
       .a-container {
         position: relative;
-        border-radius: 6px;
-        transition: all 0.2s ease;
-
-        &:hover {
-          background: rgba(30, 128, 255, 0.05);
-        }
+        transition: all 0.15s ease;
       }
 
       .catalog-aTag {
         display: block;
-        padding: 8px 16px;
-        color: #666;
-        font-size: 14px;
+        padding: 5px 10px;
+        color: var(--juejin-font-2);
+        font-size: 13px;
         line-height: 1.5;
-        transition: all 0.2s ease;
-        overflow: hidden;
-        text-overflow: ellipsis;
+        transition: color 0.15s ease;
+        text-decoration: none;
         white-space: nowrap;
+        overflow-x: auto;
+        overflow-y: hidden;
+        scrollbar-width: thin;
+        scrollbar-color: transparent transparent;
 
+        &::-webkit-scrollbar {
+          height: 3px;
+        }
+        &::-webkit-scrollbar-thumb {
+          background: transparent;
+          border-radius: 3px;
+        }
+        &:hover::-webkit-scrollbar-thumb {
+          background: rgba(0, 0, 0, 0.15);
+        }
         &:hover {
           color: var(--theme-color);
+          scrollbar-color: rgba(0, 0, 0, 0.15) transparent;
         }
       }
 
       &.active {
         > .a-container {
-          background: rgba(30, 128, 255, 0.08);
-
           .catalog-aTag {
             color: var(--theme-color);
             font-weight: 500;
@@ -609,10 +765,10 @@ export default {
             left: 0;
             top: 50%;
             transform: translateY(-50%);
-            width: 3px;
-            height: 24px;
+            width: 2px;
+            height: 16px;
             background: var(--theme-color);
-            border-radius: 0 3px 3px 0;
+            border-radius: 1px;
           }
         }
       }
@@ -620,16 +776,17 @@ export default {
       &.d1 {
         .catalog-aTag {
           font-weight: 500;
-          color: #333;
+          color: var(--juejin-font-1);
+          font-size: 13px;
         }
       }
 
       &.d3 {
         .a-container {
-          padding-left: 24px;
+          padding-left: 16px;
 
           &::before {
-            left: 24px;
+            left: 16px;
           }
         }
       }
@@ -637,14 +794,13 @@ export default {
   }
 }
 .catalog-block {
-  border-radius: 4px;
-  margin-bottom: 20px;
-  min-height: 540px;
+  margin-bottom: 0;
+  min-height: auto;
 }
 
 .catalog-body.unfold {
-  width: 296px;
-  margin: 12px 4px 0 0;
+  width: 100%;
+  margin: 8px 0 0 0;
   max-height: 70vh;
   overflow-y: auto;
 }
@@ -676,8 +832,24 @@ export default {
   padding: 0 8px 8px;
   width: 90%;
   white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+
+  &::-webkit-scrollbar {
+    height: 3px;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: transparent;
+    border-radius: 3px;
+  }
+  &:hover::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.15);
+  }
+  &:hover {
+    scrollbar-color: rgba(0, 0, 0, 0.15) transparent;
+  }
 }
 
 .catalog-list .catalog-aTag.d1-aTag-title {
@@ -816,7 +988,7 @@ export default {
   }
 }
 .markdown-body {
-  background-color: #f2f3f5 !important;
+  background-color: var(--background-color) !important;
 }
 ::v-deep {
   .wrapper {

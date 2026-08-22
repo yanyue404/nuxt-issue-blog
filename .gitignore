@@ -65,6 +65,9 @@ typings/
 # next.js build output
 .next
 
+# generate issue cache (full HTML, local only)
+.generate
+
 # nuxt.js build output
 .nuxt
 

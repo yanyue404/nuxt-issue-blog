@@ -1,57 +1,41 @@
 <template>
   <div class="card-list">
     <div v-show="pending" class="card-container">
-      <el-skeleton style="width: 100%; padding: 8px 16px 8px 32px" animated>
+      <el-skeleton style="width: 100%" animated>
         <template slot="template">
           <div v-for="item in emptyArr" :key="item" class="empty-block">
-            <div class="flex-sb-c">
-              <el-skeleton-item variant="h6" style="width: 50%" />
-              <el-skeleton-item
-                variant="h2"
-                style="width: 85px; height: 35px"
-              />
+            <el-skeleton-item variant="h3" class="sk-title" />
+            <div class="sk-meta">
+              <el-skeleton-item variant="text" class="sk-date" />
+              <el-skeleton-item variant="text" class="sk-tag" />
+              <el-skeleton-item variant="text" class="sk-tag" />
             </div>
-            <div>
-              <el-skeleton-item variant="text" style="width: 25%" />
-            </div>
-            <div style="padding: 4px">
-              <el-skeleton :rows="4" animated />
-            </div>
+            <el-skeleton-item variant="text" class="sk-line" />
+            <el-skeleton-item variant="text" class="sk-line sk-line--short" />
           </div>
         </template>
       </el-skeleton>
     </div>
     <div v-show="!pending" class="card-container">
-      <div v-for="post in postList" :key="post.number" class="card">
-        <div class="q-item">
-          <div
-            class="q-item__section q-item__section--main"
-            @click="toPostDetail(post.number)"
-          >
-            <div>
-              <h2 class="text-h6">{{ post.title }}</h2>
-              <div class="text-desc text-weight-thin q-mt-sm q-mb-sm">
-                {{ post.created_at | dateFormate }}
-              </div>
-            </div>
-            <!-- 展示 4 行内容 -->
-            <div class="q-item__label text-body1 text-intro text-justify">
-              {{ post.body_html | htmlToText }}
-            </div>
-          </div>
-          <div class="q-item__section column">
-            <div
-              v-for="label in post.labels"
-              :key="label.id || label.name"
-              class="tag-label"
-              :style="`--label-color: #${label.color}`"
-              @click="chipClickHandler(label.name)"
-            >
-              {{ label.name }}
-            </div>
-          </div>
+      <article
+        v-for="post in postList"
+        :key="post.number"
+        class="post-item"
+        @click="toPostDetail(post.number)"
+      >
+        <h2 class="post-title">{{ post.title }}</h2>
+        <div class="post-meta">
+          <time class="post-date">{{ post.created_at | dateFormate }}</time>
+          <span
+            v-for="label in post.labels"
+            :key="label.id || label.name"
+            class="post-tag"
+            :style="`--label-color: #${label.color}`"
+            @click.stop="chipClickHandler(label.name)"
+          >{{ label.name }}</span>
         </div>
-      </div>
+        <p class="post-excerpt">{{ post.body_html | htmlToText }}</p>
+      </article>
     </div>
   </div>
 </template>
@@ -63,18 +47,18 @@ export default {
   name: 'Item',
   filters: {
     dateFormate(d) {
-      return dateFormat('YYYY-MM-dd hh:mm:ss', new Date(d))
+      return dateFormat('YYYY-MM-dd', new Date(d))
     },
     htmlToText(html) {
       if (!html) return ''
       return (
         html
-          .replace(/<\/?.+?>/g, '') // 移除HTML标签
-          .replace(/\s+/g, ' ') // 合并空白字符
-          .replace(/&[a-zA-Z]+;/g, '') // 移除HTML实体
+          .replace(/<\/?.+?>/g, '')
+          .replace(/\s+/g, ' ')
+          .replace(/&[a-zA-Z]+;/g, '')
           .trim()
-          .substring(0, 200) + '...'
-      ) // 限制字符长度
+          .substring(0, 160) + '...'
+      )
     }
   },
   props: {
@@ -89,7 +73,7 @@ export default {
   },
   data() {
     return {
-      emptyArr: Array.from({ length: 10 }, (_, i) => i)
+      emptyArr: Array.from({ length: 8 }, (_, i) => i)
     }
   },
   methods: {
@@ -98,7 +82,6 @@ export default {
       if (isStaticClient()) {
         let target = this.$router.resolve(path).href
         if (target.slice(-1) !== '/') target += '/'
-        console.log('[BlogItem] open generated post', target)
         window.location.href = target
         return
       }
@@ -106,191 +89,174 @@ export default {
     },
     chipClickHandler(labelName) {
       this.$router.push(`/label/${encodeURIComponent(labelName)}`)
-    },
-    processPost(post) {
-      return {
-        title: post.title,
-        description: post.description
-        // 其他需要的属性
-      }
     }
   }
 }
 </script>
 
 <style scoped lang="scss">
-.label:hover {
-  box-shadow: 4px 4px 2px #888;
+.card-list {
+  margin-top: 0;
 }
-.markdown-body hr {
-  height: unset;
+
+.card-container {
+  background: transparent;
 }
-@media (max-width: 767px) {
-  .label,
-  .created-at {
-    display: none;
+
+.empty-block {
+  padding: 24px 0;
+  border-bottom: 1px solid var(--border-color, #f0f0f0);
+
+  &:first-child {
+    padding-top: 0;
+  }
+
+  &:last-child {
+    border-bottom: none;
   }
 }
-.text-h6 {
-  // font-size: 1.25rem;
-  // font-weight: 500;
-  line-height: 2rem;
-  margin: 0;
-  letter-spacing: 0.0125em;
-  color: var(--theme-color);
-  border-bottom: none;
-}
-.text-body1 {
-  font-size: 1rem;
-  font-weight: 400;
-  line-height: 1.5rem;
-  letter-spacing: 0.03125em;
-}
-.text-desc {
-  color: #86909c !important;
-}
-.text-intro {
-  color: var(--textNormal);
-}
-.text-justify {
-  // text-align: justify;
-  // -webkit-hyphens: auto;
-  // -ms-hyphens: auto;
-  // hyphens: auto;
+
+/* 骨架屏尺寸与真实 .post-item 结构对齐 */
+.sk-title {
+  width: 62%;
+  height: 22px;
+  margin-bottom: 12px;
+  border-radius: 4px;
 }
 
-.q-item {
-  position: relative;
-  margin-top: 16px;
-  outline: 0;
-  text-decoration: none;
+.sk-meta {
   display: flex;
-  flex-wrap: nowrap;
-  min-height: 48px;
-  padding: 8px 16px;
-  color: inherit;
-  transition: all 0.3s ease;
-  cursor: pointer !important;
-  border-top: 1px solid rgba(0, 0, 0, 0.125);
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
 
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+.sk-date {
+  width: 76px;
+  height: 13px;
+  border-radius: 3px;
+}
 
-    .q-item__label {
-      color: var(--theme-color);
+.sk-tag {
+  width: 52px;
+  height: 18px;
+  border-radius: 3px;
+}
+
+.sk-line {
+  width: 100%;
+  height: 13px;
+  margin-bottom: 8px;
+  border-radius: 3px;
+}
+
+.sk-line--short {
+  width: 72%;
+  margin-bottom: 0;
+}
+
+@media (max-width: 767px) {
+  .empty-block {
+    padding: 16px 0;
+  }
+
+  .sk-title {
+    height: 18px;
+  }
+}
+
+.post-item {
+  padding: 24px 0;
+  border-bottom: 1px solid var(--border-color, #f0f0f0);
+  cursor: pointer;
+  animation: slideUp 0.4s ease both;
+
+  @for $i from 1 through 10 {
+    &:nth-child(#{$i}) {
+      animation-delay: #{$i * 0.05}s;
     }
   }
-}
-.card:nth-of-type(1) .q-item {
-  margin-top: 0;
-  border-top: none;
-}
 
-.q-item__label {
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 3;
-  overflow: hidden;
-  word-break: break-word;
-  text-overflow: ellipsis;
-  line-height: 1.8;
-  color: var(--textNormal);
-  font-size: 14px;
-  margin: 8px 0;
-  padding: 0;
-
-  position: relative;
-  &::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    right: 0;
-    width: 100%;
-    height: 24px;
-    background: linear-gradient(
-      to bottom,
-      transparent,
-      var(--background-color)
-    );
+  &:first-child {
+    padding-top: 0;
   }
 
-  p {
-    margin: 0.5em 0;
+  &:last-child {
+    border-bottom: none;
   }
 
-  @media (max-width: 767px) {
-    font-size: 13px;
-    line-height: 1.6;
-    -webkit-line-clamp: 2;
+  &:hover .post-title {
+    color: var(--theme-color);
   }
 }
-.q-item__label + .q-item__label {
-  margin-top: 4px;
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
-.q-item__section {
+.post-title {
+  font-size: 1.2rem;
+  font-weight: 600;
+  line-height: 1.5;
+  margin: 0 0 8px;
+  color: var(--juejin-font-1);
+  border-bottom: none;
+  transition: color 0.15s;
+}
+
+.post-meta {
   display: flex;
-  justify-content: flex-start;
-  align-items: flex-end;
+  align-items: center;
   flex-wrap: wrap;
-  padding-right: 0;
-  // padding-left: 16px;
-  width: auto;
-  min-width: 0;
-  max-width: 100%;
-  cursor: pointer !important;
+  gap: 8px;
+  margin-bottom: 10px;
 }
 
-.q-item__section--main {
-  width: auto;
-  min-width: 0;
-  max-width: 100%;
-  flex: 10000 1 0%;
+.post-date {
+  font-size: 13px;
+  color: var(--juejin-font-3);
 }
 
-.q-chip {
-  display: inline-flex;
-  vertical-align: middle;
-  border-radius: 16px;
-  flex-direction: column;
-  outline: 0;
-  position: relative;
-  // height: 2em;
-  max-width: 100%;
-  margin: 4px;
-  background: #e0e0e0;
-  color: rgba(0, 0, 0, 0.87);
-  font-size: 14px;
-  padding: 0.5em 0.9em;
-}
-
-.column {
-  flex-direction: column;
-}
-
-.tag-label {
+.post-tag {
   display: inline-block;
-  padding: 4px 12px;
-  margin: 0 8px 8px 0;
-  font-size: 0.85rem;
-  font-weight: 500;
-  border-radius: 15px;
-  cursor: pointer;
+  padding: 2px 8px;
+  font-size: 12px;
+  border-radius: 3px;
   background: var(--label-color);
   color: #fff;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease;
+  cursor: pointer;
+  opacity: 0.85;
+  transition: opacity 0.15s;
 
   &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    filter: brightness(110%);
+    opacity: 1;
+  }
+}
+
+.post-excerpt {
+  font-size: 14px;
+  line-height: 1.7;
+  color: var(--juejin-font-2);
+  margin: 0;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+}
+
+@media (max-width: 767px) {
+  .post-item {
+    padding: 16px 0;
   }
 
-  &:active {
-    transform: translateY(0);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  .post-title {
+    font-size: 1rem;
+  }
+
+  .post-excerpt {
+    font-size: 13px;
+    -webkit-line-clamp: 2;
   }
 }
 </style>
