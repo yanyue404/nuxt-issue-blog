@@ -73,6 +73,12 @@ export default {
   components: {
     Catalog
   },
+  props: {
+    preloadedComments: {
+      type: Array,
+      default: () => []
+    }
+  },
   data() {
     return {
       comments: [],
@@ -113,6 +119,10 @@ export default {
     }
   },
   created() {
+    if (this.preloadedComments && this.preloadedComments.length > 0) {
+      this.comments = this.preloadedComments
+      return
+    }
     if (isStaticClient()) {
       console.warn('[comment] skip github comments on static host')
       return

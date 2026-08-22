@@ -57,6 +57,7 @@
       <el-backtop />
       <Comment
         ref="commentComponent"
+        :preloaded-comments="preloadedComments"
         @series-content-updated="handleSeriesContentUpdated"
       ></Comment>
     </div>
@@ -98,9 +99,11 @@ export default {
       return
     }
     try {
-      const res = await http.get(
-        `/repos/${store.getters['blog/repository']}/issues/${id}`
-      )
+      const repo = store.getters['blog/repository']
+      const [res, commentsRes] = await Promise.all([
+        http.get(`/repos/${repo}/issues/${id}`),
+        http.get(`/repos/${repo}/issues/${id}/comments`).catch(() => ({ data: [] }))
+      ])
       if (!res || !res.data || !res.data.id) {
         console.error('[post] empty issue payload', id)
         return error({ statusCode: 404, message: 'Post not found' })
@@ -113,7 +116,8 @@ export default {
       )
       return {
         post: Object.assign({}, res.data, { body_html: html }),
-        navList
+        navList,
+        preloadedComments: commentsRes.data || []
       }
     } catch (err) {
       console.error('[post] fetch issue failed', id, err && err.message)
@@ -140,7 +144,8 @@ export default {
       isScrollingToHash: false,
       initialHash: '', // 存储初始的 hash
       scrollAttempts: 0, // 添加尝试次数计数
-      maxScrollAttempts: 10 // 最大尝试次数
+      maxScrollAttempts: 10, // 最大尝试次数
+      preloadedComments: []
     }
   },
   head() {
