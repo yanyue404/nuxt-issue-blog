@@ -10,10 +10,10 @@ console.log(JSON.stringify({
 }));
 ")
 
-# 解析配置
-USER_NAME=$(echo $CONFIG | jq -r '.userName')
-REPOSITORY=$(echo $CONFIG | jq -r '.repository')
-BLOG_NAME=$(echo $CONFIG | jq -r '.blogName')
+# 解析配置（用 Node，不依赖本机安装 jq）
+USER_NAME=$(node -p "JSON.parse(process.argv[1]).userName" "$CONFIG")
+REPOSITORY=$(node -p "JSON.parse(process.argv[1]).repository" "$CONFIG")
+BLOG_NAME=$(node -p "JSON.parse(process.argv[1]).blogName" "$CONFIG")
 
 if [[ $1 == "dev" ]]; then
     echo '开始编译测试环境'

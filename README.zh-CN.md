@@ -14,7 +14,7 @@
 
 - 📦 SSG 静态生成，适合 GitHub Pages；生产环境读 `posts.json`，浏览器不再直连 GitHub API
 - 🌙 CSS 变量驱动的浅色/深色主题（`localStorage` 记忆）；Markdown 颜色走同一套 `--md-*` 变量
-- 💬 使用 GitHub Issues 作为 CMS
+- 💬 使用 GitHub Issues 作为 CMS；文章页内 [Utterances](https://utteranc.es/) 留言，写入同一条 Issue
 - 🔄 GitHub Actions 自动部署（手动触发 + 内容仓库触发）
 - 🌐 中英双语
 - 📱 移动端适配，响应式设计
@@ -27,7 +27,7 @@
 - 🖼️ 图片懒加载，骨架屏与真实列表结构对齐
 - 🔎 逐篇文章 SEO：`<title>`、`description`、Open Graph、Twitter 卡片取自文章标题和摘要
 
-实现细节见 [docs/optimizations.md](./docs/optimizations.md)
+实现细节见 [docs/optimizations.md](./docs/optimizations.md) · [docs/comments.md](./docs/comments.md)
 
 ## 🚀 快速开始
 
@@ -84,6 +84,15 @@ module.exports = {
 
 > Token 只在服务端 / 构建时读取（`GITHUB_TOKEN` 或 `blog.config.cjs`），公开配置里会剥掉，不会进入浏览器包。
 
+### 开启评论（Utterances）
+
+文章页底部可直接留言，评论会作为 GitHub Issue 评论写入内容仓库。只需一次性安装：
+
+1. 在 **文章仓库**（`blog.config.cjs` 的 `userName/repository`）上安装 [Utterances GitHub App](https://github.com/apps/utterances)，不要装到本模板仓库。
+2. 授予 Issues 读写权限。不必改配置文件。
+
+组件用 **文章标题**（Search API）匹配 Issue。不要用 `pathname` 或 `issue-number`。访客在组件内 Sign in with GitHub。说明见 [docs/comments.md](./docs/comments.md)。
+
 ### 开发部署
 
 ```bash
@@ -104,7 +113,7 @@ yarn deploy
 
 - CI 需设置 `GITHUB_TOKEN`（来自 `secrets.ACCESS_TOKEN`），以便 `nuxt generate` 预渲染全部 open issues。
 - 构建会写出 `/blog/data/posts.json`，供列表、搜索、标签、分页使用。
-- 文章页是静态 HTML。线上暂不请求 GitHub 评论（避免 403），读者通过 Issue 留言。
+- 文章页是静态 HTML。已有评论在 generate 时写入页面。新留言走页内 Utterances（按标题走 Search API）。
 
 ## 🤝 贡献指南
 
@@ -122,4 +131,5 @@ yarn deploy
 
 - [Nuxt.js](https://nuxtjs.org/)
 - [GitHub API](https://docs.github.com/en/rest)
+- [Utterances](https://utteranc.es/)
 - [Element UI](https://element.eleme.io/)

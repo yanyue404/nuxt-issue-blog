@@ -14,7 +14,7 @@
 
 - 📦 SSG for fast GitHub Pages deployment; production reads `posts.json` instead of calling GitHub from the browser
 - 🌙 Light/Dark theme via CSS variables (`localStorage` persistence); markdown colors share the same `--md-*` tokens
-- 💬 GitHub Issues as CMS
+- 💬 GitHub Issues as CMS; in-page comments via [Utterances](https://utteranc.es/) (posted to the same Issue)
 - 🔄 Auto-deploy with GitHub Actions (manual dispatch + content-repo trigger)
 - 🌐 i18n: Chinese / English
 - 📱 Mobile-friendly responsive design
@@ -27,7 +27,7 @@
 - 🖼️ Image lazy loading and skeleton screens that match the real list layout
 - 🔎 Per-article SEO: `<title>`, `description`, Open Graph & Twitter cards from the post title and excerpt
 
-More implementation notes: [docs/optimizations.md](./docs/optimizations.md)
+More implementation notes: [docs/optimizations.md](./docs/optimizations.md) · [docs/comments.md](./docs/comments.md)
 
 ## 🚀 Quick Start
 
@@ -84,6 +84,15 @@ module.exports = {
 
 > The token is only read on the server/build side (via `GITHUB_TOKEN` or `blog.config.cjs`) and is stripped from the public config, so it never ships in the client bundle.
 
+### Enable comments (Utterances)
+
+Comments on each article page are posted as GitHub Issue comments through [Utterances](https://utteranc.es/). Do this once:
+
+1. Install the [Utterances GitHub App](https://github.com/apps/utterances) on the **content repository** (`userName/repository` in `blog.config.cjs`), not this template repo.
+2. Grant it Issues read/write. No extra fields in the config are required.
+
+The widget matches the Issue by **article title** (GitHub Search API). Do not use `pathname` or `issue-number`. Readers sign in with GitHub inside the widget. Details: [docs/comments.md](./docs/comments.md).
+
 ### Development
 
 ```bash
@@ -104,7 +113,7 @@ yarn deploy
 
 - CI should set `GITHUB_TOKEN` (from `secrets.ACCESS_TOKEN`) so `nuxt generate` can pre-render all open issues.
 - The generated site writes `/blog/data/posts.json` for list, search, labels, and pagination.
-- Article pages are static HTML. Comments are not fetched on the live site (to avoid GitHub rate limits); readers leave comments on the Issue.
+- Article pages are static HTML. Existing comments are baked in at generate time. New comments are written in-page via Utterances (Search API by title).
 
 ## 🤝 Contributing
 
@@ -122,4 +131,5 @@ yarn deploy
 
 - [Nuxt.js](https://nuxtjs.org/)
 - [GitHub API](https://docs.github.com/en/rest)
+- [Utterances](https://utteranc.es/)
 - [Element UI](https://element.eleme.io/)

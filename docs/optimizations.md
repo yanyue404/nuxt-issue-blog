@@ -89,7 +89,8 @@ http://localhost:9527/repos/yanyue404/blog/issues/309
 ### P0 收尾（运营）
 
 - [ ] 将 `trigger-blog-rebuild.yml` 安装到内容仓库 [yanyue404/blog](https://github.com/yanyue404/blog)，确认新建/编辑 Issue 能触发本仓库 Pages 部署。
-- [x] 生产环境不再让浏览器直连 GitHub API（已改为 `posts.json` + 静态 HTML）。留言仍跳转 GitHub，不在页面内拉取 comments。
+- [x] 生产环境不再让浏览器直连 GitHub API（已改为 `posts.json` + 静态 HTML）。
+- [x] 文章页评论：构建时预渲染已有 comments；新留言走页内 [Utterances](https://utteranc.es/)（按标题 Search API）。详见 [comments.md](./comments.md)。
 
 ### P2 工程健康度
 
@@ -129,6 +130,14 @@ http://localhost:9527/repos/yanyue404/blog/issues/309
 | 搜索正文 + 高亮     | Command Palette 从仅搜标题扩展到标题+正文摘要，命中词 `<mark>` 高亮并展示正文片段，标题命中优先     | `components/CommandPalette.vue`                                       |
 | 文章页 SEO meta     | 每篇文章 `<title>`/`description`/`og:title`/`og:description`/`og:type`/`twitter:*` 用文章标题与摘要 | `pages/post/_id.vue`                                                  |
 
+#### 页内评论
+
+| 功能 | 说明 | 主要文件 |
+| ---- | ---- | -------- |
+| 页内评论（Utterances） | 文章底部 iframe 留言，写入内容仓库对应 Issue；`issue-term` 用文章标题（Search API） | `components/Utterances.vue`、`components/comment.vue`、`pages/post/_id.vue` |
+
+详见 [comments.md](./comments.md)。
+
 ### P3 产品能力（待做）
 
 按优先级排列，以下是当前博客最必要的后续优化：
@@ -145,7 +154,7 @@ http://localhost:9527/repos/yanyue404/blog/issues/309
 - [ ] **RSS 输出**：generate 时输出 `/feed.xml`，方便订阅
 - [ ] **文章页锚点分享**：点击标题自动复制带锚点的链接
 - [ ] **首页按年份归档**：侧边栏增加按年份分组的归档导航
-- [ ] **评论区预渲染**：静态生成时把评论也写入 HTML，而非全部客户端加载
+- [x] **评论区预渲染 + 页内留言**：generate 时把已有 comments 写入 HTML；新评论用 Utterances（见 [comments.md](./comments.md)）
 - [ ] **Lighthouse 性能审计**：CSS/JS 拆分、关键 CSS 内联、图片格式 WebP
 
 #### 低优先级
@@ -158,7 +167,8 @@ http://localhost:9527/repos/yanyue404/blog/issues/309
 
 - 纯静态托管下，列表/分页/搜索来自上次 generate 写入的 `/blog/data/posts.json`，新鲜度和部署同步。
 - 文章正文以预渲染 HTML 为准；从列表进入会整页打开静态文件，而不是 SPA 再打 GitHub。
-- 线上文章页暂时不请求 GitHub comments（避免 403）；可通过「添加留言」到 Issue。
+- 线上文章页不请求 GitHub comments API（避免 403）；已有评论来自 generate 快照，新留言走 Utterances iframe。
+- Utterances 必须安装在文章仓库；用文章标题匹配 Issue，标题改了可能对不上。
 
 ---
 
@@ -174,3 +184,4 @@ http://localhost:9527/repos/yanyue404/blog/issues/309
 10. 文章页浏览器标签标题为「文章标题 | 站点名」，分享时 og/twitter 描述为文章摘要。
 7. 重新 `generate` 并部署后：首页分页 `/?page=4` 有第 4 页数据；点进 `/blog/post/294` 直接出正文；Network 不应再出现 `api.github.com` 的 403。
 8. 打开 `/blog/data/posts.json` 应能看到文章列表 JSON。
+11. 线上文章页底部有 Utterances 留言框；GitHub 登录后可发评论，并出现在对应 Issue。
