@@ -70,7 +70,7 @@ http://localhost:9527/repos/yanyue404/blog/issues/309
 - generate 时用环境变量 `GITHUB_TOKEN`（CI 里来自 `secrets.ACCESS_TOKEN`），避免 287 篇文章预渲染撞未认证限额。
 - CI `PATH_TYPE=production`，客户端走静态 `posts.json`，不要打 `api.github.com`。
 - `generate.concurrency: 2`、`interval: 50`，降低预渲染打 GitHub 的并发。
-- 内容仓库发 Issue 后要重建站点：把 `.github/workflows/trigger-blog-rebuild.yml` **放到 `yanyue404/blog`**（不要只放在本仓库）。该仓库需配置能对本仓库发 `repository_dispatch` 的 `ACCESS_TOKEN`。
+- 内容仓库发 Issue 后要重建站点：workflow 已放在 [yanyue404/blog](https://github.com/yanyue404/blog) 的 `.github/workflows/trigger-blog-rebuild.yml`。该仓库需配置能对本仓库发 `repository_dispatch` 的 `ACCESS_TOKEN`。
 
 ### 线上 403 /「刷新带 hash 才正常」说明
 
@@ -88,7 +88,7 @@ http://localhost:9527/repos/yanyue404/blog/issues/309
 
 ### P0 收尾（运营）
 
-- [ ] 将 `trigger-blog-rebuild.yml` 安装到内容仓库 [yanyue404/blog](https://github.com/yanyue404/blog)，确认新建/编辑 Issue 能触发本仓库 Pages 部署。
+- [x] 将 `trigger-blog-rebuild.yml` 安装到内容仓库 [yanyue404/blog](https://github.com/yanyue404/blog)。本仓库不再保留这份 workflow。
 - [x] 生产环境不再让浏览器直连 GitHub API（已改为 `posts.json` + 静态 HTML）。
 - [x] 文章页评论：构建时预渲染已有 comments；新留言走页内 [Utterances](https://utteranc.es/)（按标题 Search API）。详见 [comments.md](./comments.md)。
 
