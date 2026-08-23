@@ -1,12 +1,23 @@
 <template>
-  <div class="markdown-body">
-    <Nuxt />
+  <div class="app-shell">
+    <Header />
+    <div class="app-main">
+      <Nuxt />
+    </div>
+    <Footer />
   </div>
 </template>
 
 <script>
+import Header from '@/components/Header.vue'
+import Footer from '@/components/Footer.vue'
+
 export default {
   name: 'DefaultLayout',
+  components: {
+    Header,
+    Footer
+  },
   head() {
     return {
       htmlAttrs: {
@@ -113,6 +124,13 @@ html.dark-mode {
   --hero-grid: rgba(129, 140, 248, 0.45);
   --hero-grid-opacity: 0.18;
 }
+html,
+body,
+#__nuxt,
+#__layout {
+  width: 100%;
+  max-width: 100%;
+}
 html.dark-mode body {
   background-color: #0d1117;
 }
@@ -122,6 +140,21 @@ html.dark-mode .glass-card {
 body {
   background-color: #fafbfc;
   transition: background-color 0.3s ease;
+}
+.app-shell {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  width: 100%;
+  max-width: 100%;
+  font-size: 16px;
+  color: var(--md-text);
+  background-color: var(--md-canvas);
+}
+.app-main {
+  flex: 1 0 auto;
+  width: 100%;
+  min-width: 0;
 }
 
 .glass-card {

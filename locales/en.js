@@ -17,6 +17,7 @@ export default {
     featureComment: 'GitHub Comments',
     featureDeploy: 'Auto Deploy',
     starOnGithub: 'Star on GitHub',
+    starCount: '{n} Stars',
     copyright: '© 2023-{year} Built with Nuxt Issue Blog'
   },
   post: {
@@ -39,7 +40,13 @@ export default {
     seriesCount: 'Series ({count} posts)',
     editPost: 'Edit Post',
     commentsCount: 'Comments ({count})',
-    addComment: 'Add Comment'
+    addComment: 'Add Comment',
+    addCommentHint: 'Sign in with GitHub below to leave a comment',
+    addCommentOnGithub: 'Comment on the GitHub Issue (scroll to the bottom)',
+    localSkipUtterances:
+      'Utterances is disabled in local dev to avoid GitHub’s 60 req/hour anonymous API limit (that 403). It works after deploy.',
+    emptyComments: 'No comments yet. Be the first to leave one.',
+    viewOnGithub: 'View on GitHub'
   },
   catalog: {
     title: 'Catalog',

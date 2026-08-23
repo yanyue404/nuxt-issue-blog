@@ -26,15 +26,18 @@
           </el-button>
         </div>
         <div
-          class="series-content"
+          class="series-content markdown-body"
           v-html="processSeriesContent(comment.body_html, comment.id)"
         ></div>
       </div>
     </div>
 
     <!-- 访客留言区域 -->
-    <div class="comments-container">
+    <div id="blog-comments" class="comments-container">
       <h2>{{ $t('comment.commentsCount', { count: visitorComments.length }) }}</h2>
+      <div v-if="!visitorComments.length" class="comment-empty">
+        {{ $t('comment.emptyComments') }}
+      </div>
       <div
         v-for="comment in visitorComments"
         :key="comment.id"
@@ -44,19 +47,32 @@
           <div class="avatar">
             <img alt="avatar" :src="comment.user.avatar_url" />
           </div>
-          <span class="username">{{ comment.user.login }}</span>
-          <span class="time">{{ timeAgo(comment.updated_at) }}</span>
+          <a
+            class="username"
+            :href="comment.user.html_url"
+            target="_blank"
+            rel="noopener noreferrer"
+          >{{ comment.user.login }}</a>
+          <a
+            class="time"
+            :href="commentPermalink(comment.id)"
+            target="_blank"
+            rel="noopener noreferrer"
+            :title="$t('comment.viewOnGithub')"
+          >{{ timeAgo(comment.updated_at) }}</a>
         </div>
-        <div class="comment-content" v-html="comment.body_html"></div>
+        <div class="comment-content markdown-body" v-html="comment.body_html"></div>
       </div>
     </div>
 
-    <!-- 评论按钮 -->
+    <!-- 在当前页留言 -->
     <div class="comment-action">
-      <el-button type="primary" @click="goAddComment">
-        <i class="el-icon-plus"></i>
-        {{ $t('comment.addComment') }}
-      </el-button>
+      <p class="comment-hint">{{ $t('comment.addCommentHint') }}</p>
+      <Utterances
+        v-if="githubRepo && issueTerm"
+        :repo="githubRepo"
+        :issue-term="issueTerm"
+      />
     </div>
   </div>
 </template>
@@ -66,17 +82,23 @@ import http from '../plugins/http/http'
 import { formatPassTime } from '@/utils/date'
 import { SERIES_KEY } from '@/utils/constants'
 import Catalog from './Catalog.vue'
+import Utterances from './Utterances.vue'
 import { isStaticClient } from '@/utils/github'
 
 export default {
   name: 'Comment',
   components: {
-    Catalog
+    Catalog,
+    Utterances
   },
   props: {
     preloadedComments: {
       type: Array,
       default: () => []
+    },
+    issueTitle: {
+      type: String,
+      default: ''
     }
   },
   data() {
@@ -89,8 +111,14 @@ export default {
     postId() {
       return this.$route.params.id || this.$route.query.id
     },
-    addCommentUrl() {
-      return `https://github.com/${this.$store.getters['blog/repository']}/issues/${this.postId}`
+    githubRepo() {
+      return this.$store.getters['blog/repository']
+    },
+    issueTerm() {
+      return (this.issueTitle || '').trim()
+    },
+    issueUrl() {
+      return `https://github.com/${this.githubRepo}/issues/${this.postId}`
     },
     authorComments() {
       return this.comments.filter(
@@ -218,13 +246,12 @@ export default {
       }
     },
 
-    goAddComment() {
-      location.href = this.addCommentUrl
+    commentPermalink(commentId) {
+      return `${this.issueUrl}#issuecomment-${commentId}`
     },
 
     goEditComment(commentId) {
-      const editUrl = `https://github.com/${this.$store.getters['blog/repository']}/issues/${this.postId}#issuecomment-${commentId}`
-      window.open(editUrl, '_blank')
+      window.open(this.commentPermalink(commentId), '_blank', 'noopener,noreferrer')
     },
 
     scrollToSection(id) {
@@ -321,11 +348,33 @@ export default {
 .username {
   font-weight: 600;
   margin-right: 10px;
+  color: var(--juejin-font-1);
+  text-decoration: none;
+
+  &:hover {
+    color: var(--theme-color);
+  }
 }
 
 .time {
   color: var(--juejin-font-3);
   font-size: 13px;
+  text-decoration: none;
+
+  &:hover {
+    color: var(--theme-color);
+    text-decoration: underline;
+  }
+}
+
+.comment-empty {
+  padding: 24px 16px;
+  text-align: center;
+  color: var(--juejin-font-3);
+  font-size: 14px;
+  background: var(--card-bg);
+  border: 1px dashed var(--border-color);
+  border-radius: 8px;
 }
 
 .series-content,
@@ -335,8 +384,44 @@ export default {
 }
 
 .comment-action {
-  text-align: center;
   margin: 30px 0;
+  text-align: left;
+}
+
+.comment-hint {
+  margin: 0 0 12px;
+  font-size: 13px;
+  color: var(--juejin-font-3);
+  line-height: 1.6;
+}
+
+.comment-github-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 20px;
+  border-radius: 6px;
+  background: var(--theme-color);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+
+  &:hover {
+    opacity: 0.9;
+    color: #fff;
+    text-decoration: none;
+  }
+}
+
+.comment-subhint {
+  margin: 12px 0 0;
+  font-size: 12px;
+  color: var(--juejin-font-3);
+
+  a {
+    color: var(--theme-color);
+  }
 }
 
 h2 {

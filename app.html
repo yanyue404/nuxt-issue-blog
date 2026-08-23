@@ -15,6 +15,15 @@
     <meta name="x5-orientation" content="portrait" />
     <meta name="x5-fullscreen" content="true" />
     <link rel="icon" type="image/x-icon" href="favicon.ico" />
+    <script>
+      (function () {
+        try {
+          if (localStorage.getItem('darken-mode') === 'dark') {
+            document.documentElement.classList.add('dark-mode')
+          }
+        } catch (e) {}
+      })()
+    </script>
     {{HEAD}} {{ ENV.PATH_TYPE === "development" ? '' : `
     <script>
       // http://www.backalleycoder.com/2016/05/13/sghpa-the-single-page-app-hack-for-github-pages/

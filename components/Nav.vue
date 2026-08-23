@@ -69,7 +69,7 @@ export default {
 
 @media (max-width: 768px) {
   .author-card {
-    padding: 12px 0;
+    padding: 16px;
   }
 }
 </style>

@@ -38,7 +38,6 @@
 
 <script>
 import { mapState, mapMutations } from 'vuex'
-import { isServer } from '@/utils'
 import { isStaticClient } from '@/utils/github'
 import DarkMode from '@/components/darkMode.vue'
 import LangSwitch from '@/components/LangSwitch.vue'
@@ -53,8 +52,11 @@ export default {
   },
   data() {
     return {
-      dark: !isServer() ? localStorage.getItem('darken-mode') === 'dark' : false
+      dark: false
     }
+  },
+  mounted() {
+    this.dark = localStorage.getItem('darken-mode') === 'dark'
   },
   computed: {
     ...mapState({
@@ -125,6 +127,7 @@ export default {
 
 .header-center {
   flex: 1;
+  min-width: 0;
   display: flex;
   justify-content: center;
 }
@@ -142,6 +145,7 @@ export default {
   cursor: pointer;
   transition: all 0.15s;
   min-width: 240px;
+  max-width: 100%;
 
   &:hover {
     border-color: var(--theme-color);
@@ -189,16 +193,25 @@ export default {
 
 @media (max-width: 768px) {
   .header-inner {
-    gap: 0.8rem;
-    padding: 10px 0;
+    gap: 0.6rem;
+    padding: 10px 16px;
   }
 
   .header-left .blog-title {
-    font-size: 1.1rem;
+    font-size: 1rem;
+    max-width: 42vw;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
-  .header-center {
-    max-width: none;
+  .search-trigger {
+    min-width: 0;
+    padding: 7px 10px;
+
+    span,
+    kbd {
+      display: none;
+    }
   }
 }
 </style>

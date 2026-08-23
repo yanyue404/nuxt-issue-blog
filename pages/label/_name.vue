@@ -1,5 +1,5 @@
 <template>
-  <div class="markdown-body">
+  <div class="label-page">
     <PageHeader
       :title="label"
       :subtitle="$t('label.allPosts')"
@@ -106,3 +106,19 @@ export default {
   }
 }
 </script>
+
+<style lang="scss" scoped>
+.label-page {
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 24px 32px 48px;
+  box-sizing: border-box;
+}
+
+@media (max-width: 900px) {
+  .label-page {
+    padding: 16px;
+  }
+}
+</style>

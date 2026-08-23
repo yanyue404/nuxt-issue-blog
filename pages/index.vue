@@ -1,6 +1,5 @@
 <template>
-  <div>
-    <Header />
+  <div class="home-page">
     <Hero />
     <div class="home-layout">
       <main class="home-main">
@@ -34,7 +33,6 @@
         </div>
       </aside>
     </div>
-    <Footer />
   </div>
 </template>
 
@@ -42,21 +40,17 @@
 import { mapState, mapMutations, mapActions } from 'vuex'
 import { isServer, toNumber, getQueryString, debounce } from '@/utils'
 import { isStaticClient } from '@/utils/github'
-import Header from '@/components/Header.vue'
 import Hero from '@/components/Hero.vue'
 import Nav from '@/components/Nav.vue'
 import LabelCloud from '@/components/LabelCloud.vue'
 import BlogList from '@/components/BlogList.vue'
-import Footer from '@/components/Footer.vue'
 
 export default {
   components: {
-    Header,
     Hero,
     Nav,
     LabelCloud,
-    BlogList,
-    Footer
+    BlogList
   },
   data() {
     return {
@@ -195,22 +189,32 @@ export default {
 }
 </script>
 <style lang="scss" scoped>
-.home-layout {
-  display: flex;
-  gap: 48px;
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 24px 32px 48px;
-}
-
-.home-main {
-  flex: 1;
+.home-page {
+  width: 100%;
   min-width: 0;
 }
 
+.home-layout {
+  display: flex;
+  align-items: flex-start;
+  gap: 48px;
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 24px 32px 48px;
+  box-sizing: border-box;
+}
+
+.home-main {
+  flex: 1 1 0%;
+  min-width: 0;
+  width: 100%;
+}
+
 .home-sidebar {
-  width: 240px;
-  flex-shrink: 0;
+  flex: 0 0 260px;
+  width: 260px;
+  min-width: 0;
   position: sticky;
   top: 80px;
   max-height: calc(100vh - 100px);
@@ -284,17 +288,18 @@ export default {
   }
 }
 
-@media (max-width: 960px) {
+@media (max-width: 900px) {
   .home-layout {
     flex-direction: column;
     padding: 16px;
     gap: 24px;
   }
   .home-sidebar {
+    flex: none;
     width: 100%;
+    max-width: 100%;
     position: static;
     max-height: none;
-    order: -1;
   }
 }
 </style>

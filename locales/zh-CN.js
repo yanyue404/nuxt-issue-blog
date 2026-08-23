@@ -17,6 +17,7 @@ export default {
     featureComment: 'GitHub评论',
     featureDeploy: '自动部署',
     starOnGithub: 'Star on GitHub',
+    starCount: '{n} 个 Star',
     copyright: '© 2023-{year} Built with Nuxt Issue Blog'
   },
   post: {
@@ -39,7 +40,13 @@ export default {
     seriesCount: '文章连载（{count} 篇）',
     editPost: '编辑文章',
     commentsCount: '留言（{count} 条）',
-    addComment: '添加留言'
+    addComment: '添加留言',
+    addCommentHint: '使用 GitHub 登录后即可在下方直接留言',
+    addCommentOnGithub: '打开 GitHub Issue 留言（请滚动到页面最底部）',
+    localSkipUtterances:
+      '本地开发不加载 Utterances，避免刷完 GitHub 匿名 API 额度（每小时 60 次，你刚才的 403 就是这个原因）。部署到线上后可在页面内留言。',
+    emptyComments: '还没有留言，来写第一条吧',
+    viewOnGithub: '在 GitHub 查看'
   },
   catalog: {
     title: '目录',

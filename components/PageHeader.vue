@@ -144,6 +144,7 @@ export default {
 
   .main-title {
     margin: 0;
+    font-size: 28px;
     font-weight: 600;
     color: var(--theme-color);
     line-height: 1.4;

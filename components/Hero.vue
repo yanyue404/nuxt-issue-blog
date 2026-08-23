@@ -57,6 +57,7 @@ export default {
   position: relative;
   isolation: isolate;
   overflow: hidden;
+  width: 100%;
   padding: 72px 32px 56px;
   text-align: center;
   background: var(--hero-gradient);

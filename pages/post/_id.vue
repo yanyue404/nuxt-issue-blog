@@ -74,12 +74,13 @@
             </el-button>
           </template>
         </PageHeader>
-        <div class="q-mt-lg" v-html="post.body_html" />
+        <div class="q-mt-lg markdown-body post-markdown" v-html="post.body_html" />
         <PostNav :current-id="postId" />
         <el-backtop />
         <Comment
           ref="commentComponent"
           :preloaded-comments="preloadedComments"
+          :issue-title="post.title"
           @series-content-updated="handleSeriesContentUpdated"
         ></Comment>
       </div>
@@ -564,6 +565,7 @@ export default {
   padding: 24px 32px;
   gap: 48px;
   position: relative;
+  box-sizing: border-box;
 }
 .article-sidebar-left {
   width: 220px;
@@ -589,6 +591,7 @@ export default {
 .article-center {
   flex: 1;
   min-width: 0;
+  width: 100%;
   max-width: 820px;
 }
 .article-sidebar-right {
@@ -653,25 +656,31 @@ export default {
   max-width: 500px;
 }
 
-@media (max-width: 1300px) {
+@media (max-width: 1200px) {
   .article-sidebar-right {
     display: none;
   }
   .article-block {
-    gap: 36px;
-    max-width: 1100px;
+    gap: 32px;
+    padding: 24px 20px;
   }
 }
-@media (max-width: 1000px) {
+@media (max-width: 860px) {
   .article-sidebar-left {
     display: none;
   }
   .article-block {
+    display: block;
     padding: 16px;
     gap: 0;
+    max-width: 100%;
   }
   .article-center {
     max-width: 100%;
+    width: 100%;
+  }
+  .breadcrumb-current {
+    max-width: 50vw;
   }
 }
 .article-catalog {
@@ -986,9 +995,6 @@ export default {
   .el-button--primary {
     // 样式已移至 default.vue
   }
-}
-.markdown-body {
-  background-color: var(--background-color) !important;
 }
 ::v-deep {
   .wrapper {

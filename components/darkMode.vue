@@ -15,22 +15,23 @@ export default {
     value: Boolean
   },
   watch: {
-    value: {
-      handler(dark) {
-        if (typeof document === 'undefined') return
-        this.applyTheme(dark)
-      },
-      immediate: true
+    value(dark) {
+      this.applyTheme(dark)
     }
   },
   mounted() {
-    this.applyTheme(this.value)
+    const dark = localStorage.getItem('darken-mode') === 'dark'
+    this.applyTheme(dark)
+    if (dark !== this.value) {
+      this.$emit('input', dark)
+    }
   },
   methods: {
     toggle() {
       this.$emit('input', !this.value)
     },
     applyTheme(dark) {
+      if (typeof document === 'undefined') return
       const html = document.documentElement
       if (dark) {
         html.classList.add('dark-mode')
