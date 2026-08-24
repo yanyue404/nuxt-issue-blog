@@ -14,6 +14,9 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
+    env:
+      # checkout/setup-node/github-script 仍跑在 Node 20 上，没有这个会被 runner 拒绝
+      ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -27,7 +30,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "18"
+          node-version: "16"
 
       - name: Get Config
         id: config
@@ -48,7 +51,6 @@ jobs:
           # ACCESS_TOKEN 无效时不要挡住默认 github.token，否则拉公开 Issue 也会 403
           GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN || github.token }}
           PATH_TYPE: production
-          NODE_OPTIONS: --openssl-legacy-provider
         run: npm run generate
 
       - name: Deploy to Pages
