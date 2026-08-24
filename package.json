@@ -6,7 +6,7 @@
     "serve": "cross-env PATH_TYPE=development nuxt",
     "dev": "sh build.sh dev",
     "build": "sh build.sh generate",
-    "generate": "nuxt generate",
+    "generate": "cross-env PATH_TYPE=production nuxt generate",
     "deploy": "node deploy.js",
     "prepare": "husky install",
     "lint": "eslint --ext .vue pages/ --ext .vue components --ext .js store/",

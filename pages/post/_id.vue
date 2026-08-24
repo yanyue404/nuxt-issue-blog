@@ -136,17 +136,18 @@ export default {
       }
     }
 
-    // nuxt generate 通过 routes().payload 传入全文，避免每页再打 GitHub、也不把 fs 打进客户端包
+    // nuxt generate 通过 routes().payload 传入全文；评论失败不阻断页面生成
     if (payload && (payload.id || payload.body_html || payload.title)) {
       let comments = []
       try {
         const repo = store.getters['blog/repository']
-        const commentsRes = await http
-          .get(`/repos/${repo}/issues/${id}/comments`)
-          .catch(() => ({ data: [] }))
+        const commentsRes = await http.get(
+          `/repos/${repo}/issues/${id}/comments`,
+          { timeout: 8000 }
+        )
         comments = commentsRes.data || []
       } catch (e) {
-        comments = []
+        console.warn('[post] comments skipped', id, e && e.message)
       }
       return buildPayload(payload, comments)
     }
@@ -155,20 +156,17 @@ export default {
     let lastErr = null
     for (let attempt = 1; attempt <= 3; attempt++) {
       try {
-        const [res, commentsRes] = await Promise.all([
-          http.get(`/repos/${repo}/issues/${id}`),
-          http.get(`/repos/${repo}/issues/${id}/comments`).catch(() => ({ data: [] }))
-        ])
+        const res = await http.get(`/repos/${repo}/issues/${id}`)
         if (!res || !res.data || !res.data.id) {
-          console.error('[post] empty issue payload', id)
+          console.warn('[post] empty issue payload', id)
           lastErr = new Error('empty payload')
         } else {
-          return buildPayload(res.data, commentsRes.data || [])
+          return buildPayload(res.data, [])
         }
       } catch (err) {
         lastErr = err
         const status = err.response && err.response.status
-        console.error('[post] fetch issue failed', id, {
+        console.warn('[post] fetch issue failed', id, {
           attempt,
           status,
           message: err && err.message
@@ -179,7 +177,7 @@ export default {
         await new Promise((resolve) => setTimeout(resolve, 600 * attempt))
       }
     }
-    console.error('[post] give up after retries', id, lastErr && lastErr.message)
+    console.warn('[post] give up after retries', id, lastErr && lastErr.message)
   },
   data() {
     return {

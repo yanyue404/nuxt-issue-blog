@@ -1,21 +1,11 @@
 import * as axios from "axios";
-import qs from "qs";
 
 global.Buffer = global.Buffer || require("buffer").Buffer;
 
 function resolveGithubToken() {
   if (!process.server) return "";
-  const envToken = process.env["GITHUB_TOKEN"];
-  if (envToken) return envToken;
-  try {
-    const conf = require("../../blog.config.cjs");
-    if (conf.accessToken) {
-      return Buffer.from(conf.accessToken, "base64").toString();
-    }
-  } catch (e) {
-    console.warn("[http] server token missing", e && e.message);
-  }
-  return "";
+  const { resolveGithubToken: resolveToken } = require("../../utils/github-token.cjs");
+  return resolveToken();
 }
 
 function resolveBaseURL() {
@@ -26,14 +16,21 @@ function resolveBaseURL() {
   return "https://api.github.com";
 }
 
+function githubAuthHeaders(token) {
+  const headers = {
+    Accept: "application/vnd.github.v3.html",
+    "User-Agent": "nuxt-issue-blog",
+    "X-GitHub-Api-Version": "2022-11-28",
+  };
+  if (token) {
+    headers.Authorization = `Bearer ${token}`;
+  }
+  return headers;
+}
+
 const token = resolveGithubToken();
 const baseURL = resolveBaseURL();
-const headers = {
-  Accept: "application/vnd.github.v3.html",
-};
-if (token) {
-  headers.Authorization = `token ${token}`;
-}
+const headers = githubAuthHeaders(token);
 
 console.log("[http] github client", {
   baseURL,
@@ -48,6 +45,26 @@ const http = axios.create({
   headers,
 });
 
+function isTransientNetworkError(error) {
+  if (!error) return false;
+  const code = error.code || "";
+  if (
+    code === "ECONNRESET" ||
+    code === "ETIMEDOUT" ||
+    code === "ECONNABORTED" ||
+    code === "ENOTFOUND"
+  ) {
+    return true;
+  }
+  const msg = String(error.message || "").toLowerCase();
+  return (
+    msg.includes("aborted") ||
+    msg.includes("socket hang up") ||
+    msg.includes("timeout") ||
+    msg.includes("network")
+  );
+}
+
 http.interceptors.request.use(
   (config) => {
     return config;
@@ -61,52 +78,38 @@ http.interceptors.response.use(
   (response) => {
     return response;
   },
-  (error) => {
+  async (error) => {
+    const reqConfig = error.config || {};
+    reqConfig.__retryCount = reqConfig.__retryCount || 0;
+    if (isTransientNetworkError(error) && reqConfig.__retryCount < 2) {
+      reqConfig.__retryCount += 1;
+      await new Promise((resolve) =>
+        setTimeout(resolve, 600 * reqConfig.__retryCount)
+      );
+      return http(reqConfig);
+    }
+
     let errMsg = {};
-    if (qs.parse(error).response) {
-      switch (qs.parse(error).response.status) {
-        case 400:
-          errMsg.message = "请求错误(400)";
-          break;
-        case 401:
-          errMsg.message = "未授权，请重新登录(401)";
-          break;
-        case 403:
-          errMsg.message = "拒绝访问(403)";
-          break;
-        case 404:
-          errMsg.message = "请求出错(404)";
-          break;
-        case 408:
-          errMsg.message = "请求超时(408)";
-          break;
-        case 500:
-          errMsg.message = "服务器错误(500)";
-          break;
-        case 501:
-          errMsg.message = "服务未实现(501)";
-          break;
-        case 502:
-          errMsg.message = "网络错误(502)";
-          break;
-        case 503:
-          errMsg.message = "服务不可用(503)";
-          break;
-        case 504:
-          errMsg.message = "网络超时(504)";
-          break;
-        case 505:
-          errMsg.message = "HTTP版本不受支持(505)";
-          break;
-        default:
-          errMsg.message = `连接出错(${qs.parse(error).response.status})!`;
-      }
-      errMsg.status = qs.parse(error).response.status;
-      errMsg.url = qs.parse(error).response.config.url;
+    if (error.response) {
+      const status = error.response.status;
+      const messages = {
+        400: "请求错误(400)",
+        401: "未授权，请重新登录(401)",
+        403: "拒绝访问(403)",
+        404: "请求出错(404)",
+        408: "请求超时(408)",
+        500: "服务器错误(500)",
+        502: "网络错误(502)",
+        503: "服务不可用(503)",
+        504: "网络超时(504)",
+      };
+      errMsg.message = messages[status] || `连接出错(${status})!`;
+      errMsg.status = status;
+      errMsg.url = error.response.config && error.response.config.url;
     } else {
       errMsg.message = error.message || "网络异常";
     }
-    console.error("[http] github api error", errMsg);
+    console.warn("[http] github api error", errMsg);
     return Promise.reject(error);
   }
 );

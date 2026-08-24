@@ -120,7 +120,7 @@ export const actions = {
     commit('setPending', true)
 
     try {
-      if (isStaticClient()) {
+      if (process.static || isStaticClient()) {
         const all = await dispatch('ensureStaticPosts')
         const filtered = filterByKey(all, key)
         commit('updatePostList', {
@@ -175,7 +175,7 @@ export const actions = {
         total_count
       })
     } catch (err) {
-      console.error('[blog/getIssueList] failed', {
+      console.warn('[blog/getIssueList] failed', {
         page,
         key,
         message: err && err.message

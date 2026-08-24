@@ -1,18 +1,20 @@
 import blogConfig from './blog.config'
 const path = require('path')
 const { mapIssue, writePostsJson } = require('./utils/posts-snapshot.cjs')
+const {
+  resolveGithubToken,
+  githubAuthHeaders,
+  tokenCandidates,
+  isRetryableGithubError,
+  githubErrorDetail
+} = require('./utils/github-token.cjs')
 
-if (!process.env.GITHUB_TOKEN) {
-  try {
-    const conf = require('./blog.config.cjs')
-    if (conf.accessToken) {
-      process.env.GITHUB_TOKEN = Buffer.from(
-        conf.accessToken,
-        'base64'
-      ).toString()
-    }
-  } catch (e) {
-    console.warn('[nuxt.config] GITHUB_TOKEN not set', e && e.message)
+if (!String(process.env.GITHUB_TOKEN || '').trim()) {
+  const fromConfig = resolveGithubToken()
+  if (fromConfig) {
+    process.env.GITHUB_TOKEN = fromConfig
+  } else {
+    console.warn('[nuxt.config] GITHUB_TOKEN not set')
   }
 }
 
@@ -151,14 +153,9 @@ export default {
     asyncScripts: true
   },
   proxy: (function githubProxy() {
-    const token = process.env.GITHUB_TOKEN || ''
-    const headers = {
-      Accept: 'application/vnd.github.v3.html',
-      'User-Agent': 'nuxt-issue-blog'
-    }
-    if (token) {
-      headers.Authorization = `token ${token}`
-    } else {
+    const token = resolveGithubToken()
+    const headers = githubAuthHeaders(token)
+    if (!token) {
       console.warn('[nuxt.config] github proxy has no token')
     }
     const makeProxy = () => ({
@@ -174,49 +171,50 @@ export default {
   })(),
   generate: {
     fallback: '404.html',
-    interval: 80,
+    failOnError: false,
+    interval: 120,
     concurrency: 2,
     async routes() {
       const axios = require('axios')
       const { writeIssueCache } = require('./utils/posts-snapshot.cjs')
       const config = require('./blog.config.cjs')
-      const token = process.env.GITHUB_TOKEN || ''
-      const headers = {
-        Accept: 'application/vnd.github.v3.html',
-        'User-Agent': 'nuxt-issue-blog'
-      }
-      if (token) {
-        headers.Authorization = `token ${token}`
-      } else {
-        console.warn('[generate] no GITHUB_TOKEN, listing may be rate-limited')
-      }
+      const tokens = tokenCandidates()
+      console.log(
+        '[generate] github token sources',
+        tokens.map((t) => (t ? 'present' : 'anonymous'))
+      )
       async function fetchPage(page, perPage) {
         let lastErr
-        for (let attempt = 1; attempt <= 4; attempt++) {
-          try {
-            return await axios.get(
-              `https://api.github.com/repos/${config.userName}/${config.repository}/issues`,
-              {
-                params: {
-                  state: 'open',
-                  sort: 'created',
-                  direction: 'desc',
-                  per_page: perPage,
-                  page
-                },
-                headers,
-                timeout: 30000
-              }
-            )
-          } catch (err) {
-            lastErr = err
-            const status = err.response && err.response.status
-            console.warn(
-              '[generate] list issues failed',
-              { page, attempt, status, message: err.message }
-            )
-            if (status === 404) throw err
-            await new Promise((resolve) => setTimeout(resolve, 800 * attempt))
+        for (let t = 0; t < tokens.length; t++) {
+          const headers = githubAuthHeaders(tokens[t])
+          for (let attempt = 1; attempt <= 3; attempt++) {
+            try {
+              return await axios.get(
+                `https://api.github.com/repos/${config.userName}/${config.repository}/issues`,
+                {
+                  params: {
+                    state: 'open',
+                    sort: 'created',
+                    direction: 'desc',
+                    per_page: perPage,
+                    page
+                  },
+                  headers,
+                  timeout: 30000
+                }
+              )
+            } catch (err) {
+              lastErr = err
+              const detail = githubErrorDetail(err)
+              console.warn('[generate] list issues failed', {
+                page,
+                attempt,
+                token: tokens[t] ? `candidate-${t + 1}` : 'anonymous',
+                ...detail
+              })
+              if (!isRetryableGithubError(err)) break
+              await new Promise((resolve) => setTimeout(resolve, 800 * attempt))
+            }
           }
         }
         throw lastErr

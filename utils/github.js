@@ -11,6 +11,11 @@ export function isStaticClient() {
   return false
 }
 
+/** nuxt generate 服务端预渲染：用已拉取的快照，不要再打 GitHub */
+export function isGenerateTime() {
+  return Boolean(process.static)
+}
+
 export function mapIssueToPost(item) {
   if (!item) return null
   return {

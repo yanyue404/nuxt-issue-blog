@@ -30,7 +30,7 @@ export const actions = {
         commit('updateUser', res.data)
       })
       .catch((err) => {
-        console.error('[user/getUserInfo] failed', err)
+        console.warn('[user/getUserInfo] failed', err && err.message)
       })
   }
 }

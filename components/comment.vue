@@ -147,10 +147,9 @@ export default {
     }
   },
   created() {
-    if (this.preloadedComments && this.preloadedComments.length > 0) {
-      this.comments = this.preloadedComments
-      return
-    }
+    this.comments = this.preloadedComments || []
+    if (process.server) return
+    if (this.comments.length) return
     if (isStaticClient()) {
       console.warn('[comment] skip github comments on static host')
       return
@@ -242,7 +241,7 @@ export default {
         )
         this.comments = data
       } catch (err) {
-        console.error('Failed to fetch comments:', err)
+        console.warn('[comment] skip comments after network error', err && err.message)
       }
     },
 

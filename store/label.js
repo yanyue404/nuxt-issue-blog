@@ -39,7 +39,7 @@ export const actions = {
   ) {
     commit('setPending', true)
     try {
-      if (isStaticClient()) {
+      if (process.static || isStaticClient()) {
         const all = await dispatch('blog/ensureStaticPosts', null, {
           root: true
         })
@@ -69,7 +69,7 @@ export const actions = {
         total_count: res.data.total_count || posts.length
       })
     } catch (err) {
-      console.error('[label/getIssueListByLabel] failed', {
+      console.warn('[label/getIssueListByLabel] failed', {
         page,
         label,
         message: err && err.message

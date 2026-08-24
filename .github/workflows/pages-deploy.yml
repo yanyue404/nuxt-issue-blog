@@ -12,9 +12,11 @@ on:
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           ref: "master"
           persist-credentials: false
@@ -23,13 +25,13 @@ jobs:
           TZ: Asia/Shanghai
 
       - name: Setup Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
-          node-version: "16"
+          node-version: "18"
 
       - name: Get Config
         id: config
-        uses: actions/github-script@v6
+        uses: actions/github-script@v7
         with:
           script: |
             const config = require('./blog.config.cjs')
@@ -43,8 +45,10 @@ jobs:
 
       - name: Build Nuxt Pages
         env:
-          GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN }}
+          # ACCESS_TOKEN 无效时不要挡住默认 github.token，否则拉公开 Issue 也会 403
+          GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN || github.token }}
           PATH_TYPE: production
+          NODE_OPTIONS: --openssl-legacy-provider
         run: npm run generate
 
       - name: Deploy to Pages
@@ -61,5 +65,5 @@ jobs:
           git config user.email "$USER_EMAIL"
           git add .
           git commit -m 'Deploying to gh-pages from Github actions'
-          git push -f https://ACCESS_TOKEN:${{secrets.ACCESS_TOKEN }}@github.com/$USER_NAME/$REPO.git master:gh-pages
+          git push -f https://x-access-token:${{ secrets.ACCESS_TOKEN }}@github.com/$USER_NAME/$REPO.git master:gh-pages
           cd -
